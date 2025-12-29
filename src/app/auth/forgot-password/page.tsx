@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client';
 
 import { useState } from 'react';
@@ -139,3 +140,16 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+=======
+import React from 'react';
+
+const page = () => {
+    return (
+        <div>
+            <h1>This is forgot password</h1>
+        </div>
+    );
+};
+
+export default page;
+>>>>>>> 2e56554c84be31e943bba24bcd73cbd65b00da35
