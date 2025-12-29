@@ -1,12 +1,4 @@
-import Navbar from "@/app/components/navbar/Navbar";
-import Footer from "@/app/components/Footer/Footer";
-import HeroSection from "@/app/components/home/HeroSection";
-import FeaturesSection from "@/app/components/home/FeaturesSection";
-import HowItWorksSection from "@/app/components/home/HowItWorksSection";
-import TestimonialsSection from "@/app/components/home/TestimonialsSection";
-import FaqSection from "@/app/components/home/FaqSection";
-
-const faqs = [
+export const faqs = [
   {
     q: "Do I need coding skills?",
     a: "No. Shoply is built for non-technical users. You pick a theme, add products, customize content, and publish.",
@@ -21,7 +13,7 @@ const faqs = [
   },
 ];
 
-const testimonials = [
+export const testimonials = [
   {
     name: "Bakery Owner",
     role: "Home-based business",
@@ -38,17 +30,3 @@ const testimonials = [
     text: "It reduced inbox chaos. Now orders are clean and easy to manage.",
   },
 ];
-
-export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-white text-slate-900">
-      <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <FaqSection />
-      <Footer />
-    </main>
-  );
-}
