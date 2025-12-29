@@ -4,7 +4,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur bg-white/70 border-b border-slate-200">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="font-extrabold tracking-tight text-lg">
+        <Link href="/" className="font-extrabold tracking-tight text-lg text-black">
           Shoply<span className="text-orange-600">.</span>
         </Link>
 
@@ -17,7 +17,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/auth/login"
-            className="text-sm px-4 py-2 rounded-lg hover:bg-slate-100 transition"
+            className="text-sm px-4 py-2 rounded-lg text-black hover:bg-slate-100 transition"
           >
             Log in
           </Link>

@@ -3,7 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #f97316;
+  --primary-light: #e8f8f4;
 }
+
+
 
 @theme inline {
   --color-background: var(--background);
@@ -24,3 +28,64 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+
+
+/* Contact form  */
+
+/* Custom focus underline animation */
+.input-underline {
+  position: relative;
+}
+
+.input-underline input,
+.input-underline textarea {
+  border: none;
+  border-bottom: 2px solid #ccc; /* default border */
+  outline: none;
+  color: black;
+  padding: 0.5rem 0;
+}
+
+
+textarea {
+    margin-bottom: -7px;
+    width: 94%;
+
+}
+
+.input-underline input::placeholder,
+.input-underline textarea::placeholder {
+  color: #9ca3af; /* gray placeholder */
+}
+
+.input-underline::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0%;
+  height: 2px;
+  background-color: var(--primary);
+  transition: all 0.3s ease-in-out;
+  transform: translateX(-50%);
+}
+
+.input-underline input:focus + .underline,
+.input-underline textarea:focus + .underline {
+  width: 100%;
+}
+
+.underline {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  height: 2px;
+  background-color: var(--primary);
+  width: 0%;
+  transform: translateX(-50%);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Contact form  */

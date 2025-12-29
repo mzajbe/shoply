@@ -2,10 +2,10 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-200">
+    <footer className="border-t border-slate-200 mt-10">
       <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-          <div className="font-extrabold">
+          <div className="font-extrabold text-black">
             Shoply<span className="text-orange-600">.</span>
           </div>
           <div className="text-sm text-slate-600 mt-1">
