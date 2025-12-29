@@ -6,9 +6,7 @@ import Link from 'next/link';
 
 export default function LoginPage() {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState('email');
     const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
@@ -23,10 +21,7 @@ export default function LoginPage() {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    [activeTab === 'email' ? 'email' : 'phone']: activeTab === 'email' ? email : phone,
-                    password,
-                }),
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
@@ -54,73 +49,26 @@ export default function LoginPage() {
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
                             <p className="text-gray-600 mb-8">Sign in to your account to continue</p>
 
-                            {/* Tabs */}
-                            <div className="flex gap-4 mb-8 border-b border-gray-200">
-                                <button
-                                    onClick={() => {
-                                        setActiveTab('email');
-                                        setError('');
-                                    }}
-                                    className={`pb-3 font-semibold transition-colors ${
-                                        activeTab === 'email'
-                                            ? 'text-blue-600 border-b-2 border-blue-600'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    Email
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setActiveTab('phone');
-                                        setError('');
-                                    }}
-                                    className={`pb-3 font-semibold transition-colors ${
-                                        activeTab === 'phone'
-                                            ? 'text-blue-600 border-b-2 border-blue-600'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    Phone No.
-                                </button>
-                            </div>
-
                             {error && (
                                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
                                     {error}
                                 </div>
                             )}
-
                             <form onSubmit={handleSubmit} className="space-y-5">
-                                {/* Email/Phone Input */}
-                                {activeTab === 'email' ? (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Email Address
-                                        </label>
-                                        <input
-                                            type="email"
-                                            placeholder="Enter your email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Phone Number
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            placeholder="Enter your phone number"
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            required
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                        />
-                                    </div>
-                                )}
+                                {/* Email Input */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        placeholder="Enter your email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition"
+                                    />
+                                </div>
 
                                 {/* Password Input */}
                                 <div>
@@ -133,7 +81,7 @@ export default function LoginPage() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition"
                                     />
                                 </div>
 
@@ -144,13 +92,13 @@ export default function LoginPage() {
                                             type="checkbox"
                                             checked={rememberMe}
                                             onChange={(e) => setRememberMe(e.target.checked)}
-                                            className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                            className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500"
                                         />
                                         <span className="text-sm text-gray-700">Remember me</span>
                                     </label>
                                     <Link
                                         href="/auth/forgot-password"
-                                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
                                     >
                                         Forgot password?
                                     </Link>
@@ -160,7 +108,7 @@ export default function LoginPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition mt-2"
+                                    className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition mt-2"
                                 >
                                     {loading ? 'Signing in...' : 'Sign in'}
                                 </button>
@@ -171,7 +119,7 @@ export default function LoginPage() {
                                 Don't have an account?{' '}
                                 <Link
                                     href="/auth/register"
-                                    className="text-blue-600 hover:text-blue-700 font-semibold"
+                                    className="text-orange-600 hover:text-orange-700 font-semibold"
                                 >
                                     Sign up
                                 </Link>
@@ -180,11 +128,11 @@ export default function LoginPage() {
                             {/* Terms */}
                             <p className="text-xs text-gray-500 text-center mt-6">
                                 By signing up you agree to the{' '}
-                                <Link href="/terms" className="text-blue-600 hover:underline">
+                                <Link href="/terms" className="text-orange-600 hover:underline">
                                     Terms of Use
                                 </Link>
                                 {' '}&{' '}
-                                <Link href="/privacy" className="text-blue-600 hover:underline">
+                                <Link href="/privacy" className="text-orange-600 hover:underline">
                                     Privacy Policy
                                 </Link>
                                 {' '}of Shoply
@@ -218,7 +166,7 @@ export default function LoginPage() {
 
                             {/* Dots Indicator */}
                             <div className="flex gap-2 justify-center mt-8">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                                 <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
                                 <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
                             </div>
