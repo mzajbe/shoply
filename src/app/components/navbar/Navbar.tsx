@@ -11,6 +11,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-6 text-sm text-slate-700">
           <a href="#features" className="hover:text-slate-900">Features</a>
           <a href="#how" className="hover:text-slate-900">How it works</a>
+          <a href="/contact" className="hover:text-slate-900">Contact</a>
           <a href="#faq" className="hover:text-slate-900">FAQ</a>
         </nav>
 

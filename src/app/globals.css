@@ -5,6 +5,20 @@
   --foreground: #171717;
   --primary: #f97316;
   --primary-light: #e8f8f4;
+
+
+
+   /* Supporting colors */
+  --primary-light: #fde7d8;
+  --primary-soft: #fff4ec;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+
+  --card-gradient-start: #fff7ed;
+  --card-gradient-end: #ffe2cc;
+
+  --card-border: rgba(249, 115, 22, 0.25);
 }
 
 
@@ -28,6 +42,174 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+
+
+/* home smart selling section  */
+/* ===== SECTION WRAPPER ===== */
+.selling-section {
+  padding: 80px 0;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    #ffffff 45%,
+    var(--primary) 100%
+  ); 
+}
+
+/* ===== LOGO SLIDER ===== */
+.logo-slider {
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 24px 0;
+}
+
+.logo-track {
+  display: flex;
+  gap: 48px;
+  animation: slide 18s linear infinite;
+}
+
+.logo-item {
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ===== CONTENT ===== */
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 60px 20px 0;
+  text-align: center;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.subtitle {
+  margin-top: 12px;
+  color: var(--text-muted);
+}
+
+/* ===== CARDS ===== */
+.card-grid {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    var(--card-gradient-start),
+    var(--card-gradient-end)
+  );
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.15);
+}
+
+/* IMAGE */
+.card-image {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.card-image img {
+  max-width: 80%;
+  height: auto;
+}
+
+/* CONTENT */
+.card-content {
+  padding: 24px;
+  text-align: left;
+}
+
+.card-content h3 {
+  color: var(--primary);
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.card-content p {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+/* ===== QUOTE ===== */
+.quote {
+  margin-top: 60px;
+  font-size: 18px;
+  color: var(--text-dark);
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.quote span {
+  display: block;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* home smart selling section  */
+
+
+
+
+/* FAQ Section  */
+/* Smooth FAQ open animation */
+.faq-item {
+  overflow: hidden;
+}
+
+.faq-content {
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+/* when open */
+details[open] .faq-content {
+  max-height: 600px; /* must be larger than content */
+  opacity: 1;
+}
+
+
+/* FAQ Section  */
 
 
 

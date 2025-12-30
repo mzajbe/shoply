@@ -5,6 +5,7 @@ import FeaturesSection from "@/app/components/home/FeaturesSection";
 import HowItWorksSection from "@/app/components/home/HowItWorksSection";
 import TestimonialsSection from "@/app/components/home/TestimonialsSection";
 import FaqSection from "@/app/components/home/FaqSection";
+import SmartSellingSection from "./components/home/SmartSellingSection";
 
 const faqs = [
   {
@@ -46,6 +47,7 @@ export default function HomePage() {
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <SmartSellingSection />
       <TestimonialsSection />
       <FaqSection />
       <Footer />

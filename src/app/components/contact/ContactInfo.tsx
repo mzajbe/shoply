@@ -15,8 +15,8 @@ export default function ContactInfo() {
       </p>
 
       <ul className="space-y-6 text-sm">
-        <li className="flex gap-3"><PhoneIncoming /> +880 1234 567 890</li>
-        <li className="flex gap-3"><Mails /> support@yourdomain.com</li>
+        <li className="flex gap-3"><PhoneIncoming /> +8801755781767</li>
+        <li className="flex gap-3"><Mails /> support@shoply.com</li>
         <li className="flex gap-3"><MapPinHouse /> Dhaka, Bangladesh</li>
       </ul>
 

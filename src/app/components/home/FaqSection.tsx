@@ -12,16 +12,22 @@ export default function FaqSection() {
 
         <div className="mt-10 grid md:grid-cols-2 gap-6">
           {faqs.map((f) => (
-            <details
-              key={f.q}
-              className="group rounded-2xl border border-slate-200 bg-slate-50 p-5 open:bg-white transition"
-            >
-              <summary className="cursor-pointer list-none font-semibold flex items-center justify-between gap-3">
-                <span>{f.q}</span>
-                <span className="text-slate-400 group-open:rotate-45 transition">+</span>
-              </summary>
-              <p className="mt-3 text-slate-700 leading-relaxed">{f.a}</p>
-            </details>
+            <details key={f.q} className="group faq-item rounded-2xl border border-slate-200 bg-slate-50 p-5 transition-all duration-300 open:bg-white" >
+                <summary className="cursor-pointer list-none font-semibold flex items-center justify-between gap-3">
+                  <span>{f.q}</span>
+                  <span className="text-slate-400 group-open:rotate-45 transition-transform duration-300">
+                    +
+                  </span>
+                </summary>
+
+                {/* animated content */}
+                <div className="faq-content">
+                  <p className="mt-3 text-slate-700 leading-relaxed">
+                    {f.a}
+                  </p>
+                </div>
+              </details>
+
           ))}
         </div>
 
