@@ -1,21 +1,53 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    // const [nextPath, setNextPath] = useState('/dashboard');
+
+    // useEffect(() => {
+    //     if (searchParams) {
+    //         const next = searchParams.get('next');
+    //         if (next) {
+    //             setNextPath(next);
+    //         }
+    //     }
+    // }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
+
+        // // get next path from URL or use default
+        // const finalNextPath = searchParams?.get('next') ?? nextPath ?? '/dashboard';
+
+        // // Demo credentials (no DB) — allow quick demo login
+        // const DEMO_EMAIL = 'demo@shoply.test';
+        // const DEMO_PASSWORD = 'demopassword';
+        // if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+        //     // mark demo user as logged in (client-side) and redirect
+        //     console.log('Demo login - storing shoply_demo_user and redirecting to:', finalNextPath);
+        //     try {
+        //         localStorage.setItem('shoply_demo_user', JSON.stringify({ email: DEMO_EMAIL, demo: true }));
+        //         console.log('localStorage set, item:', localStorage.getItem('shoply_demo_user'));
+        //     } catch (e) {
+        //         // ignore storage errors
+        //     }
+        //     console.log('Calling router.push with path:', finalNextPath);
+        //     router.push(finalNextPath);
+        //     setLoading(false);
+        //     return;
+        // }
 
         try {
             const response = await fetch('/api/auth/login', {
@@ -31,7 +63,13 @@ export default function LoginPage() {
                 return;
             }
 
-            router.push('/dashboard');
+            // try {
+            //     localStorage.setItem('shoply_user', JSON.stringify(data.user ?? { email }));
+            // } catch (e) {
+            //     // ignore
+            // }
+
+            // router.push(finalNextPath);
         } catch (err) {
             setError('An error occurred. Please try again.');
         } finally {
@@ -54,6 +92,11 @@ export default function LoginPage() {
                                     {error}
                                 </div>
                             )}
+                            {/* <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg mb-4 text-sm">
+                                <p className="font-medium">Demo Credentials:</p>
+                                <p>Email: <code className="bg-white px-1 rounded">demo@shoply.test</code></p>
+                                <p>Password: <code className="bg-white px-1 rounded">demopassword</code></p>
+                            </div> */}
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 {/* Email Input */}
                                 <div>
