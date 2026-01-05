@@ -12,44 +12,14 @@ export default function LoginPage() {
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    // const [nextPath, setNextPath] = useState('/dashboard');
-
-    // useEffect(() => {
-    //     if (searchParams) {
-    //         const next = searchParams.get('next');
-    //         if (next) {
-    //             setNextPath(next);
-    //         }
-    //     }
-    // }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
-        // // get next path from URL or use default
-        // const finalNextPath = searchParams?.get('next') ?? nextPath ?? '/dashboard';
-
-        // // Demo credentials (no DB) — allow quick demo login
-        // const DEMO_EMAIL = 'demo@shoply.test';
-        // const DEMO_PASSWORD = 'demopassword';
-        // if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-        //     // mark demo user as logged in (client-side) and redirect
-        //     console.log('Demo login - storing shoply_demo_user and redirecting to:', finalNextPath);
-        //     try {
-        //         localStorage.setItem('shoply_demo_user', JSON.stringify({ email: DEMO_EMAIL, demo: true }));
-        //         console.log('localStorage set, item:', localStorage.getItem('shoply_demo_user'));
-        //     } catch (e) {
-        //         // ignore storage errors
-        //     }
-        //     console.log('Calling router.push with path:', finalNextPath);
-        //     router.push(finalNextPath);
-        //     setLoading(false);
-        //     return;
-        // }
-
         try {
+            // Call your existing login API route
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,13 +33,16 @@ export default function LoginPage() {
                 return;
             }
 
-            // try {
-            //     localStorage.setItem('shoply_user', JSON.stringify(data.user ?? { email }));
-            // } catch (e) {
-            //     // ignore
-            // }
+            // Optional: Store user data in localStorage for persistence
+            try {
+                localStorage.setItem('shoply_user', JSON.stringify(data.user ?? { email }));
+            } catch (e) {
+                // ignore storage errors
+            }
 
-            // router.push(finalNextPath);
+            // FIXED: Always redirect to the Theme Library first after login
+            router.push('/ahmed-dashboard/theme');
+
         } catch (err) {
             setError('An error occurred. Please try again.');
         } finally {
@@ -92,11 +65,7 @@ export default function LoginPage() {
                                     {error}
                                 </div>
                             )}
-                            {/* <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg mb-4 text-sm">
-                                <p className="font-medium">Demo Credentials:</p>
-                                <p>Email: <code className="bg-white px-1 rounded">demo@shoply.test</code></p>
-                                <p>Password: <code className="bg-white px-1 rounded">demopassword</code></p>
-                            </div> */}
+
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 {/* Email Input */}
                                 <div>
@@ -151,7 +120,7 @@ export default function LoginPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition mt-2"
+                                    className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition mt-2 shadow-md"
                                 >
                                     {loading ? 'Signing in...' : 'Sign in'}
                                 </button>
@@ -183,31 +152,26 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    {/* Right Section - Testimonial */}
+                    {/* Right Section - Testimonial Content */}
                     <div className="hidden lg:flex flex-col justify-center items-center bg-gray-900 p-8 relative overflow-hidden">
-                        {/* Background Image */}
                         <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>
                         
                         <div className="relative z-10 text-center">
-                            {/* Testimonial Image */}
-                            <div className="mb-6 w-24 h-24 mx-auto rounded-full border-4 border-white overflow-hidden">
+                            <div className="mb-6 w-24 h-24 mx-auto rounded-full border-4 border-white overflow-hidden shadow-xl">
                                 <div className="w-full h-full bg-gray-700 flex items-center justify-center">
                                     <span className="text-white text-4xl">👤</span>
                                 </div>
                             </div>
 
-                            {/* Testimonial Text */}
-                            <p className="text-white text-xl leading-relaxed mb-6 max-w-sm">
+                            <p className="text-white text-xl leading-relaxed mb-6 max-w-sm italic">
                                 "With Shoply, our online sales have skyrocketed. It's more than just a platform; it's a partner in our growth, helping us reach goals we once only dreamed of."
                             </p>
 
-                            {/* Author */}
                             <div>
                                 <p className="text-white font-semibold mb-1">Rahat Ahmed</p>
                                 <p className="text-gray-300 text-sm">Founder of Shoply</p>
                             </div>
 
-                            {/* Dots Indicator */}
                             <div className="flex gap-2 justify-center mt-8">
                                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                                 <div className="w-3 h-3 bg-gray-600 rounded-full"></div>

@@ -48,11 +48,12 @@ export default function ThemeCustomize() {
 	}, [id]);
 
 	function handleSave() {
-		// For this demo we simply show a saved state and update URL to pass settings to the live editor.
 		setSaved(true);
 		setTimeout(() => setSaved(false), 1500);
 		const params = new URLSearchParams({ id, color, font, layout });
-		router.push(`/dashboard/theme/editor?${params.toString()}`);
+		
+		// FIXED: Point to /ahmed-dashboard/theme/editor instead of /dashboard/theme/editor
+		router.push(`/ahmed-dashboard/theme/editor?${params.toString()}`);
 	}
 
 	return (
