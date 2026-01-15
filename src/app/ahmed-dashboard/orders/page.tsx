@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { fetchOrders } from "@/lib/data";
 
 type Order = {
   id: string;
@@ -10,17 +11,9 @@ type Order = {
   date: string;
 };
 
-const allOrders: Order[] = [
-  { id: "1007", customer: "Nadia Rahman", email: "nadia@example.com", total: "$79.99", status: "Paid", date: "Dec 30, 2025" },
-  { id: "1006", customer: "Ahmed Hassan", email: "ahmed@example.com", total: "$159.99", status: "Pending", date: "Dec 29, 2025" },
-  { id: "1005", customer: "Sarah Johnson", email: "sarah@example.com", total: "$89.99", status: "Paid", date: "Dec 28, 2025" },
-  { id: "1004", customer: "Maya Patel", email: "maya@example.com", total: "$19.99", status: "Paid", date: "Dec 27, 2025" },
-  { id: "1003", customer: "Liam Smith", email: "liam@example.com", total: "$299.99", status: "Refunded", date: "Dec 26, 2025" },
-  { id: "1002", customer: "John Doe", email: "john@example.com", total: "$49.50", status: "Pending", date: "Dec 25, 2025" },
-  { id: "1001", customer: "Ayesha Khan", email: "ayesha@example.com", total: "$129.00", status: "Paid", date: "Dec 24, 2025" },
-];
+export default async function OrdersPage() {
+  const allOrders: Order[] = await fetchOrders();
 
-export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="flex">
@@ -118,9 +111,8 @@ function Sidebar({ active }: { active: string }) {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md ${
-                active === item.label ? "bg-slate-100 font-medium" : "text-slate-700 hover:bg-slate-50"
-              }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md ${active === item.label ? "bg-slate-100 font-medium" : "text-slate-700 hover:bg-slate-50"
+                }`}
             >
               <div className="w-5 h-5 text-slate-500">{item.icon}</div>
               <div className="flex-1">{item.label}</div>
