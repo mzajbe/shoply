@@ -155,7 +155,7 @@ export default function LoginPage() {
                     {/* Right Section - Testimonial Content */}
                     <div className="hidden lg:flex flex-col justify-center items-center bg-gray-900 p-8 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>
-                        
+
                         <div className="relative z-10 text-center">
                             <div className="mb-6 w-24 h-24 mx-auto rounded-full border-4 border-white overflow-hidden shadow-xl">
                                 <div className="w-full h-full bg-gray-700 flex items-center justify-center">

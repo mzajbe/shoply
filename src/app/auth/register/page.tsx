@@ -46,7 +46,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/dashboard');
+      router.push('/ahmed-dashboard/theme');
     } catch (err) {
       setError('An error occurred. Please try again.');
     } finally {
@@ -63,7 +63,7 @@ export default function RegisterPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Create an account</h1>
               <p className="text-gray-600 mb-8">Start building your store with Shoply</p>
 
-              
+
 
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
