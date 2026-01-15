@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoutButton from "../../components/auth/LogoutButton";
 
 const themes = [
   {
@@ -35,19 +36,21 @@ export default function ThemeLibrary() {
             Select a blueprint to start building your no-code storefront.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {/* UPDATED: Added Dashboard button to jump back to the main admin page */}
-          <Link 
-            href="/ahmed-dashboard" 
+          <Link
+            href="/ahmed-dashboard"
             className="inline-flex items-center px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
             📊 View Dashboard
           </Link>
 
+          <LogoutButton className="inline-flex items-center px-6 py-3 border border-red-200 text-red-700 font-semibold rounded-xl hover:bg-red-50 transition-all active:scale-95 shadow-sm" />
+
           {/* Quick Action: Start from Scratch */}
-          <Link 
-            href="/ahmed-dashboard/theme/editor" 
+          <Link
+            href="/ahmed-dashboard/theme/editor"
             className="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all hover:scale-105 active:scale-95"
           >
             Build from Scratch
@@ -59,11 +62,11 @@ export default function ThemeLibrary() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {themes.map((t) => (
           <div key={t.id} className="group bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
-            
+
             {/* Theme Visual Preview */}
             <div className="h-48 relative flex items-center justify-center bg-slate-50 overflow-hidden" aria-hidden="true">
               <div className="absolute inset-0 opacity-10" style={{ backgroundColor: t.previewColor }} />
-              
+
               {/* Mockup UI Elements */}
               <div className="relative w-4/5 h-3/5 rounded-xl bg-white shadow-lg border border-slate-100 p-3 flex flex-col gap-2">
                 <div className={`w-1/3 h-2 rounded-full ${t.accent}`} />
@@ -83,7 +86,7 @@ export default function ThemeLibrary() {
                 <h2 className="font-bold text-xl text-slate-900">{t.name}</h2>
                 <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded">Template</span>
               </div>
-              
+
               <p className="text-sm text-slate-600 leading-relaxed mb-6">
                 {t.desc}
               </p>
