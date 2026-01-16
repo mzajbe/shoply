@@ -10,7 +10,18 @@ export default function PreviewPage() {
 
   useEffect(() => {
     // Load the latest customized data from storage
-    const loadData = () => {
+    const loadData = async () => {
+      // 1. Try Cloud First
+      try {
+        const res = await fetch("/api/themes");
+        const data = await res.json();
+        if (data.config) {
+          setConfig(data.config);
+          return;
+        }
+      } catch (e) { console.error("Cloud preview fetch failed", e); }
+
+      // 2. Fallback to local
       const saved = localStorage.getItem("shoply_theme_preview");
       if (saved) {
         setConfig(JSON.parse(saved));

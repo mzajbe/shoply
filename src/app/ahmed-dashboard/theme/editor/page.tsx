@@ -108,54 +108,66 @@ export default function LiveEditor() {
   useEffect(() => {
     const urlThemeId = search.get("id");
     const isNew = search.get("new") === "true";
-    const savedData = localStorage.getItem("shoply_project_draft");
 
-    let loadedFromDraft = false;
+    async function loadInitialData() {
+      let loadedFromCloud = false;
 
-    if (savedData) {
+      // 1. TRY CLOUD FIRST
       try {
-        const parsed = JSON.parse(savedData);
-        const draftThemeId = parsed.themeId;
-
-        // Condition to LOAD DRAFT:
-        // 1. No theme ID in URL (resuming general work)
-        // 2. Theme ID in URL matches the theme of the draft
-        if (!urlThemeId || urlThemeId === draftThemeId) {
-          if (parsed.pageSections) setPageSections(parsed.pageSections);
-          setGlobalColor(parsed.globalColor || "#6366f1");
-          setGlobalFont(parsed.globalFont || "Inter");
-          if (parsed.activePage) setActivePage(parsed.activePage);
-          loadedFromDraft = true;
-          console.log("Loaded existing draft for theme:", draftThemeId);
+        const res = await fetch("/api/themes");
+        const data = await res.json();
+        if (data.config) {
+          const config = data.config;
+          // If it's a new theme selection from library, we might want to prioritize the preset
+          // but only if the user explicitly clicked "new" and it's a DIFFERENT theme.
+          if (!(isNew && urlThemeId && config.themeId !== urlThemeId)) {
+            setPageSections(config.pageSections || { "Home": [] });
+            setGlobalColor(config.globalColor || "#6366f1");
+            setGlobalFont(config.globalFont || "Inter");
+            if (config.activePage) setActivePage(config.activePage);
+            loadedFromCloud = true;
+            console.log("Loaded from Cloud Project");
+          }
         }
-      } catch (e) { console.error("Failed to load draft", e); }
-    }
+      } catch (e) { console.error("Cloud fetch failed", e); }
 
-    // If we didn't load a draft, check for Presets (New selection or mismatch)
-    if (!loadedFromDraft) {
-      if (urlThemeId && THEME_PRESETS[urlThemeId]) {
-        const preset = THEME_PRESETS[urlThemeId];
-        // Honor URL parameters (from Customize page) or fallback to preset defaults
-        setGlobalColor(search.get("color") || preset.color);
-        setGlobalFont(search.get("font") || preset.font);
-        setPageSections({ "Home": preset.sections });
-        console.log("Loaded fresh preset for:", urlThemeId);
-      } else {
-        // Fallback default
-        setPageSections({
-          "Home": [
-            {
-              id: "hero-1",
-              type: "hero",
-              settings: { layout: "spacious" },
-              content: { title: "Your Brand, Your Way", subtitle: "Build your dream store.", bgImage: "", bgSize: "cover", bgPos: "center" }
-            }
-          ]
-        });
+      if (loadedFromCloud) return;
+
+      // 2. FALLBACK TO LOCAL STORAGE
+      const savedData = localStorage.getItem("shoply_project_draft");
+      let loadedFromDraft = false;
+
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          const draftThemeId = parsed.themeId;
+
+          if (!urlThemeId || urlThemeId === draftThemeId) {
+            if (parsed.pageSections) setPageSections(parsed.pageSections);
+            setGlobalColor(parsed.globalColor || "#6366f1");
+            setGlobalFont(parsed.globalFont || "Inter");
+            if (parsed.activePage) setActivePage(parsed.activePage);
+            loadedFromDraft = true;
+          }
+        } catch (e) { console.error("Failed to load draft", e); }
+      }
+
+      // 3. FALLBACK TO PRESETS
+      if (!loadedFromDraft) {
+        if (urlThemeId && THEME_PRESETS[urlThemeId]) {
+          const preset = THEME_PRESETS[urlThemeId];
+          setGlobalColor(search.get("color") || preset.color);
+          setGlobalFont(search.get("font") || preset.font);
+          setPageSections({ "Home": preset.sections });
+        } else {
+          setPageSections({ "Home": [{ id: "hero-1", type: "hero", settings: { layout: "spacious" }, content: { title: "Your Brand, Your Way", subtitle: "Build your dream store.", bgImage: "", bgSize: "cover", bgPos: "center" } }] });
+        }
       }
     }
 
-    // Always clear the 'new' flag after processing to prevent accidental resets
+    loadInitialData();
+
+    // Clear the 'new' flag
     if (isNew && urlThemeId) {
       window.history.replaceState({}, '', window.location.pathname + `?id=${urlThemeId}`);
     }
@@ -175,7 +187,7 @@ export default function LiveEditor() {
   // DEBOUNCED AUTO-SAVE Project Draft (Every 1.5s after last change)
   useEffect(() => {
     setIsSaving(true);
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const urlThemeId = search.get("id");
       const projectData = {
         themeId: urlThemeId || "default",
@@ -184,9 +196,24 @@ export default function LiveEditor() {
         pageSections,
         activePage
       };
+
+      // 1. Local Storage fallback (fast)
       localStorage.setItem("shoply_project_draft", JSON.stringify(projectData));
+
+      // 2. Cloud Server Sync (reliable)
+      try {
+        await fetch("/api/themes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ config: projectData })
+        });
+        setSaveStatus("Cloud Synced");
+      } catch (e) {
+        console.error("Cloud save failed", e);
+        setSaveStatus("Saved Locally");
+      }
+
       setIsSaving(false);
-      setSaveStatus("Auto-saved");
       setTimeout(() => setSaveStatus(""), 2000);
     }, 1500);
 
