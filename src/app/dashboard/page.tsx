@@ -56,7 +56,7 @@ export default function DashboardPage() {
 								{sampleOrders.map((o) => (
 									<tr key={o.id} className="border-t">
 										<td className="py-3 font-medium">#{o.id}</td>
-										<td className="py-3">{o.customer}</td>
+										<td className="py-3 font-bold">{o.customer}</td>
 										<td className="py-3">{o.total}</td>
 										<td className="py-3">
 											<StatusPill status={o.status} />
