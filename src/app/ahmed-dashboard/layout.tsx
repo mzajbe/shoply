@@ -37,6 +37,7 @@ function Sidebar() {
 
     const navItems = [
         { label: "Overview", icon: <IconGrid />, href: "/ahmed-dashboard" },
+        { label: "Themes", icon: <IconPalette />, href: "/ahmed-dashboard/theme" },
         { label: "Orders", icon: <IconShoppingCart />, href: "/ahmed-dashboard/orders" },
         { label: "Products", icon: <IconBox />, href: "/ahmed-dashboard/products" },
         { label: "Customers", icon: <IconUsers />, href: "/ahmed-dashboard/customers" },
@@ -151,6 +152,18 @@ function IconUsers() {
             <path d="M17 21v-2a4 4 0 0 0-3-3.87" />
             <path d="M7 21v-2a4 4 0 0 1 3-3.87" />
             <circle cx="12" cy="7" r="4" />
+        </svg>
+    );
+}
+
+function IconPalette() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3a9 9 0 1 0 0 18h1a3 3 0 0 0 0-6h-1a3 3 0 0 1 0-6z" />
+            <circle cx="8.5" cy="10.5" r="1" />
+            <circle cx="11.5" cy="7.5" r="1" />
+            <circle cx="15.5" cy="10.5" r="1" />
+            <circle cx="16.5" cy="14.5" r="1" />
         </svg>
     );
 }

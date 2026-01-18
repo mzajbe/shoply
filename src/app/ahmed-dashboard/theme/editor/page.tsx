@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import allProducts from "../../products/product";
 
-type SectionType = "hero" | "features" | "products" | "faq" | "testimonials" | "cta";
+type SectionType = "navbar" | "hero" | "features" | "products" | "faq" | "testimonials" | "cta";
 
 const THEMES: Record<string, any> = {
   minimal: { name: "Minimal", color: "#6366f1", font: "Inter", preview: "/themes/minimal.png" },
@@ -103,6 +103,20 @@ export default function LiveEditor() {
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [mediaItems, setMediaItems] = useState<any[]>([]);
   const [selectingFor, setSelectingFor] = useState<{ id: string, field: string, index?: number } | null>(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+
+  const formatBytes = (bytes: number) => {
+    if (!bytes) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    let value = bytes;
+    let index = 0;
+    while (value >= 1024 && index < units.length - 1) {
+      value /= 1024;
+      index += 1;
+    }
+    const precision = value >= 10 || index === 0 ? 0 : 1;
+    return `${value.toFixed(precision)} ${units[index]}`;
+  };
 
   // --- PERSISTENCE LOGIC (SAVE/LOAD) ---
   useEffect(() => {
@@ -304,6 +318,41 @@ export default function LiveEditor() {
     }
   };
 
+  const handleMediaUpload = async (file: File) => {
+    setIsUploadingMedia(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await res.json();
+      const newItem = {
+        id: data.id,
+        url: data.url,
+        name: data.name,
+        size: formatBytes(data.size),
+        type: data.type || "image",
+      };
+
+      const updated = [newItem, ...mediaItems];
+      setMediaItems(updated);
+      localStorage.setItem("shoply_media_library", JSON.stringify(updated));
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload failed");
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
+
   // --- BLOCK MANAGEMENT ---
   const addSection = (type: SectionType) => {
     const newId = Math.random().toString(36).substr(2, 9);
@@ -380,6 +429,24 @@ export default function LiveEditor() {
 
   function getDefaultContent(type: SectionType) {
     switch (type) {
+      case 'navbar': {
+        const existingLinks = sections
+          .filter(s => s.type !== 'navbar')
+          .slice(0, 4)
+          .map((s) => ({
+            label: s.type.charAt(0).toUpperCase() + s.type.slice(1),
+            href: `#section-${s.id}`
+          }));
+        return {
+          brand: "Shoply",
+          links: existingLinks.length ? existingLinks : [
+            { label: "Home", href: "#top" },
+            { label: "Shop", href: "#top" }
+          ],
+          ctaLabel: "Shop Now",
+          ctaHref: "#top"
+        };
+      }
       case 'hero': return { title: "New Hero Section", subtitle: "Edit text directly.", bgImage: "", bgSize: "cover", bgPos: "center" };
       case 'products': return { title: "Featured Products", count: 3, customImages: [] };
       case 'features': return { title: "Why Us", items: [{ t: "Fast Shipping", d: "Delivery in 2 days" }, { t: "24/7 Support", d: "Always here" }] };
@@ -492,13 +559,14 @@ export default function LiveEditor() {
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Add New Block</h4>
                     <div className="grid grid-cols-3 gap-2">
-                      {(['hero', 'products', 'features', 'faq', 'testimonials', 'cta'] as SectionType[]).map(type => (
+                      {(['navbar', 'hero', 'products', 'features', 'faq', 'testimonials', 'cta'] as SectionType[]).map(type => (
                         <button
                           key={type}
                           onClick={() => addSection(type)}
                           className="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all gap-1 saturate-[0.8] hover:saturate-100"
                         >
                           <span className="text-lg">
+                            {type === 'navbar' && '=='}
                             {type === 'hero' && '🖼️'}
                             {type === 'products' && '🛍️'}
                             {type === 'features' && '✨'}
@@ -648,6 +716,82 @@ export default function LiveEditor() {
                             onChange={(e) => handleContentChange('button', e.target.value)}
                             className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
                           />
+                        </div>
+                      )}
+
+                      {/* NAVBAR SPECIFIC */}
+                      {activeSection.type === 'navbar' && (
+                        <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Brand</label>
+                            <input
+                              type="text"
+                              value={activeSection.content.brand || ""}
+                              onChange={(e) => handleContentChange('brand', e.target.value)}
+                              className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">CTA Label</label>
+                              <input
+                                type="text"
+                                value={activeSection.content.ctaLabel || ""}
+                                onChange={(e) => handleContentChange('ctaLabel', e.target.value)}
+                                className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">CTA Link</label>
+                              <input
+                                type="text"
+                                value={activeSection.content.ctaHref || ""}
+                                onChange={(e) => handleContentChange('ctaHref', e.target.value)}
+                                className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                                placeholder="#section-..."
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nav Links</label>
+                              <button
+                                onClick={() => updateContent(activeSection.id, {
+                                  links: [...(activeSection.content.links || []), { label: "New Link", href: "#" }]
+                                })}
+                                className="text-[9px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-full hover:bg-orange-100 transition-colors uppercase tracking-widest"
+                              >
+                                + Add
+                              </button>
+                            </div>
+                            {(activeSection.content.links || []).map((link: any, idx: number) => (
+                              <div key={idx} className="p-3 bg-white border border-slate-100 rounded-xl space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Link {idx + 1}</span>
+                                  <button
+                                    onClick={() => removeItemFromList(activeSection.id, 'links', idx)}
+                                    className="text-[9px] font-black text-slate-300 hover:text-red-500 uppercase tracking-widest"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={link.label || ""}
+                                  onChange={(e) => updateItemInList(activeSection.id, 'links', idx, 'label', e.target.value)}
+                                  className="w-full text-xs font-bold outline-none placeholder:text-slate-200 border-b border-transparent focus:border-orange-100 pb-1"
+                                  placeholder="Label"
+                                />
+                                <input
+                                  type="text"
+                                  value={link.href || ""}
+                                  onChange={(e) => updateItemInList(activeSection.id, 'links', idx, 'href', e.target.value)}
+                                  className="w-full text-[11px] text-slate-500 outline-none placeholder:text-slate-200"
+                                  placeholder="Href"
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 
@@ -821,7 +965,7 @@ export default function LiveEditor() {
         </aside>
 
         {/* MAIN PREVIEW CANVAS */}
-        <main className="flex-1 overflow-y-auto bg-slate-100/50 p-4 md:p-12 scroll-smooth">
+        <main id="top" className="flex-1 overflow-y-auto bg-slate-100/50 p-4 md:p-12 scroll-smooth">
           {/* Device Mockup Wrapper */}
           <div className="max-w-5xl mx-auto">
             <div className="bg-white shadow-2xl rounded-[32px] overflow-hidden border border-slate-200 min-h-screen relative" style={{ fontFamily: globalFont }}>
@@ -851,6 +995,7 @@ export default function LiveEditor() {
                   {sections.map((section, index) => (
                     <div
                       key={section.id}
+                      id={`section-${section.id}`}
                       onClick={(e) => { e.stopPropagation(); setActiveSectionId(section.id); }}
                       className={`group relative transition-all cursor-pointer ${activeSectionId === section.id ? 'ring-4 ring-orange-500 ring-inset ring-offset-0' : 'hover:bg-slate-50/50'}`}
                     >
@@ -874,6 +1019,64 @@ export default function LiveEditor() {
                       </div>
 
                       <div className="w-full">
+                        {section.type === 'navbar' && (
+                          <div
+                            className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur"
+                            style={{ backgroundColor: section.settings.bgColor || "white" }}
+                          >
+                            <div className="px-6 md:px-16 py-4 flex items-center justify-between">
+                              <div className="flex items-center gap-8">
+                                <div
+                                  className="font-black text-lg outline-none"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => updateContent(section.id, { brand: e.currentTarget.innerText })}
+                                  style={{ color: section.settings.titleColor || undefined }}
+                                >
+                                  {section.content.brand || "Brand"}
+                                </div>
+                                <nav className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest">
+                                  {(section.content.links || []).map((link: any, i: number) => (
+                                    <a
+                                      key={i}
+                                      href={link.href || "#"}
+                                      className="hover:text-slate-900 transition"
+                                      style={{ color: section.settings.subtitleColor || undefined }}
+                                    >
+                                      <span
+                                        className="outline-none"
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => updateItemInList(section.id, 'links', i, 'label', e.currentTarget.innerText)}
+                                      >
+                                        {link.label || "Link"}
+                                      </span>
+                                    </a>
+                                  ))}
+                                </nav>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {section.content.ctaLabel && (
+                                  <a
+                                    href={section.content.ctaHref || "#"}
+                                    className="px-4 py-2 rounded-full text-[10px] font-black text-white shadow-sm hover:shadow-md transition"
+                                    style={{ backgroundColor: globalColor }}
+                                  >
+                                    <span
+                                      className="outline-none"
+                                      contentEditable
+                                      suppressContentEditableWarning
+                                      onBlur={(e) => updateContent(section.id, { ctaLabel: e.currentTarget.innerText })}
+                                    >
+                                      {section.content.ctaLabel}
+                                    </span>
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {section.type === 'hero' && (
                           <div className={`py-24 md:py-36 px-6 md:px-20 text-white relative overflow-hidden flex flex-col justify-center ${section.settings.textAlign === 'left' ? 'items-start text-left' :
                             section.settings.textAlign === 'right' ? 'items-end text-right' :
@@ -1139,7 +1342,26 @@ export default function LiveEditor() {
           <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-6 border-b flex items-center justify-between bg-slate-50">
               <h2 className="text-xl font-bold">Pick Image</h2>
-              <button onClick={() => setShowMediaModal(false)} className="text-slate-400 hover:text-slate-900 text-2xl">✕</button>
+              <div className="flex items-center gap-3">
+                <label className="px-3 py-2 text-xs font-bold border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition">
+                  {isUploadingMedia ? "Uploading..." : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleMediaUpload(file);
+                      }
+                      if (e.target.value) {
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </label>
+                <button onClick={() => setShowMediaModal(false)} className="text-slate-400 hover:text-slate-900 text-2xl">?</button>
+              </div>
             </div>
             <div className="p-8 overflow-y-auto grid grid-cols-4 gap-4">
               {mediaItems.length > 0 ? mediaItems.map((item: any) => (
@@ -1159,3 +1381,4 @@ export default function LiveEditor() {
     </div>
   );
 }
+

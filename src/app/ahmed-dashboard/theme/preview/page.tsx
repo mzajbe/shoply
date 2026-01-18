@@ -1,12 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/Footer/Footer";
 import allProducts from "../../products/product";
 
+const PREVIEW_PRESETS: Record<string, any> = {
+  minimal: {
+    globalColor: "#6366f1",
+    globalFont: "Inter",
+    sections: [
+      { id: "m1", type: "hero", settings: { layout: "spacious", bgColor: "#ffffff" }, content: { title: "Refined Simplicity", subtitle: "Minimalist design for modern brands.", bgImage: "" } },
+      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3 } }
+    ]
+  },
+  modern: {
+    globalColor: "#fb7185",
+    globalFont: "Poppins",
+    sections: [
+      { id: "mo1", type: "hero", settings: { layout: "center", bgColor: "#fff1f2" }, content: { title: "Bold & Vibrant", subtitle: "Express your brand with high contrast.", bgImage: "" } },
+      { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
+    ]
+  },
+  classic: {
+    globalColor: "#10b981",
+    globalFont: "Georgia",
+    sections: [
+      { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
+      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3 } }
+    ]
+  },
+  bold: {
+    globalColor: "#eab308",
+    globalFont: "Inter",
+    sections: [
+      { id: "bd1", type: "hero", settings: { layout: "spacious", bgColor: "#121212", titleColor: "#ffffff" }, content: { title: "UNLEASH THE POWER", subtitle: "High energy design for high energy brands.", bgImage: "" } },
+      { id: "bd2", type: "cta", settings: { bgColor: "#1a1a1a" }, content: { title: "Join the Dark Side", button: "Get Started Now" } }
+    ]
+  },
+  elegant: {
+    globalColor: "#c2410c",
+    globalFont: "Georgia",
+    sections: [
+      { id: "el1", type: "hero", settings: { layout: "center", bgColor: "#fff7ed" }, content: { title: "Pure Sophistication", subtitle: "The finest selection for the finest taste.", bgImage: "" } },
+      { id: "el2", type: "testimonials", settings: { bgColor: "#ffffff" }, content: { items: [{ name: "Sophia R.", text: "Absolutely stunning template.", role: "CEO" }] } }
+    ]
+  },
+  tech: {
+    globalColor: "#06b6d4",
+    globalFont: "Inter",
+    sections: [
+      { id: "tk1", type: "hero", settings: { layout: "spacious", bgColor: "#0f172a", titleColor: "#22d3ee" }, content: { title: "Future Forward", subtitle: "Building the digital landscape of tomorrow.", bgImage: "" } },
+      { id: "tk2", type: "faq", settings: { bgColor: "#1e293b", titleColor: "#ffffff" }, content: { title: "System Knowledge", items: [{ q: "Uptime?", a: "99.9% guaranteed." }] } }
+    ]
+  },
+};
+
 export default function PreviewPage() {
   const [config, setConfig] = useState<any>(null);
+  const search = useSearchParams();
 
   useEffect(() => {
     // Load the latest customized data from storage
@@ -25,7 +78,37 @@ export default function PreviewPage() {
       const saved = localStorage.getItem("shoply_theme_preview");
       if (saved) {
         setConfig(JSON.parse(saved));
+        return;
       }
+
+      // 3. Fallback to theme preset (from query string)
+      const themeId = search.get("id") || "minimal";
+      const preset = PREVIEW_PRESETS[themeId];
+      if (preset) {
+        setConfig({
+          globalColor: preset.globalColor,
+          globalFont: preset.globalFont,
+          sections: preset.sections,
+          pageSections: { Home: preset.sections },
+          activePage: "Home",
+          themeId,
+        });
+        return;
+      }
+
+      // 4. Final fallback: basic demo
+      const demoSections = [
+        { id: "hero-1", type: "hero", settings: { layout: "spacious", bgColor: "#ffffff" }, content: { title: "Your Storefront", subtitle: "A clean demo layout.", bgImage: "" } },
+        { id: "products-1", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Featured Products", count: 3 } }
+      ];
+      setConfig({
+        globalColor: "#6366f1",
+        globalFont: "Inter",
+        sections: demoSections,
+        pageSections: { Home: demoSections },
+        activePage: "Home",
+        themeId: "default",
+      });
     };
 
     loadData();
@@ -39,7 +122,7 @@ export default function PreviewPage() {
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  }, [search]);
 
   if (!config) {
     return (
@@ -49,12 +132,52 @@ export default function PreviewPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-white text-slate-900" style={{ fontFamily: config.globalFont }}>
-      <Navbar />
+  const sections = config.pageSections?.[config.activePage] || config.sections || [];
+  const hasNavbar = sections.some((section: any) => section.type === "navbar");
 
-      {(config.pageSections?.[config.activePage] || config.sections || []).map((section: any) => (
-        <section key={section.id} className="w-full">
+  return (
+    <main id="top" className="min-h-screen bg-white text-slate-900 scroll-smooth" style={{ fontFamily: config.globalFont }}>
+      {!hasNavbar && <Navbar />}
+
+      {sections.map((section: any) => (
+        <section key={section.id} id={`section-${section.id}`} className="w-full">
+          {/* NAVBAR SECTION */}
+          {section.type === 'navbar' && (
+            <div
+              className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur"
+              style={{ backgroundColor: section.settings?.bgColor || "white" }}
+            >
+              <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-8">
+                  <div className="font-black text-lg" style={{ color: section.settings?.titleColor || undefined }}>
+                    {section.content.brand || "Brand"}
+                  </div>
+                  <nav className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest">
+                    {(section.content.links || []).map((link: any, i: number) => (
+                      <a
+                        key={i}
+                        href={link.href || "#"}
+                        className="hover:text-slate-900 transition"
+                        style={{ color: section.settings?.subtitleColor || undefined }}
+                      >
+                        {link.label || "Link"}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+                {section.content.ctaLabel && (
+                  <a
+                    href={section.content.ctaHref || "#"}
+                    className="px-4 py-2 rounded-full text-xs font-black text-white shadow-sm hover:shadow-md transition"
+                    style={{ backgroundColor: config.globalColor }}
+                  >
+                    {section.content.ctaLabel}
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* 1. HERO SECTION */}
           {section.type === 'hero' && (
             <div

@@ -109,10 +109,10 @@ export default function ThemeLibrary() {
 
               <div className="mt-auto flex flex-col sm:flex-row gap-3">
                 <Link
-                  href={`/ahmed-dashboard/theme/editor/customize?id=${t.id}`}
+                  href={`/ahmed-dashboard/theme/preview?id=${t.id}`}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition shadow-md"
                 >
-                  Customize
+                  Live Preview
                 </Link>
                 <Link
                   href={`/ahmed-dashboard/theme/editor?id=${t.id}&new=true`}

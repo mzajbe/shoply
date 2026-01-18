@@ -100,9 +100,11 @@ export async function setupDatabase() {
         price VARCHAR(50) NOT NULL,
         stock INTEGER NOT NULL,
         status VARCHAR(50) NOT NULL,
+        image_url TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await client.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT');
 
     // Create campaigns table
     await client.query(`
