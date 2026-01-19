@@ -255,7 +255,7 @@ export default function LiveEditor() {
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
     // FIXED: Point to the new absolute path to avoid 404
-    window.open("/ahmed-dashboard/theme/preview", "_blank");
+    window.open("/your-store-name", "_blank");
   };
 
   // --- THEME & PAGE LOGIC ---

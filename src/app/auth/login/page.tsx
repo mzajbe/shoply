@@ -41,7 +41,7 @@ export default function LoginPage() {
             }
 
             // FIXED: Always redirect to the Theme Library first after login
-            router.push('/ahmed-dashboard/theme');
+            router.push('/dashboard/theme');
 
         } catch (err) {
             setError('An error occurred. Please try again.');
