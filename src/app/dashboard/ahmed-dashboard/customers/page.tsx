@@ -68,12 +68,12 @@ export default function CustomersPage() {
           <h1 className="text-3xl font-semibold">Customers</h1>
           <p className="text-sm text-slate-600 mt-1">View and manage customer details</p>
         </div>
-        <button
+        {/* <button
           onClick={() => setShowModal(true)}
           className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition"
         >
           + Add Customer
-        </button>
+        </button> */}
       </div>
 
       <div className="bg-white rounded-lg shadow border border-slate-200">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface MediaItem {
@@ -14,6 +14,20 @@ interface MediaItem {
 export default function MediaLibrary() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const formatBytes = (bytes: number) => {
+    if (!bytes) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    let value = bytes;
+    let index = 0;
+    while (value >= 1024 && index < units.length - 1) {
+      value /= 1024;
+      index += 1;
+    }
+    const precision = value >= 10 || index === 0 ? 0 : 1;
+    return `${value.toFixed(precision)} ${units[index]}`;
+  };
 
   // 1. Load media from localStorage on initial mount
   useEffect(() => {
@@ -38,20 +52,36 @@ export default function MediaLibrary() {
     localStorage.setItem("shoply_media_library", JSON.stringify(newMedia));
   };
 
-  // Simulate an image upload
-  const handleUpload = () => {
+  const handleUpload = async (file: File) => {
     setIsUploading(true);
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await res.json();
       const newItem: MediaItem = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: `upload-${Date.now()}.jpg`,
-        url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-        size: "1.5 MB",
-        type: "image/jpeg",
+        id: data.id,
+        name: data.name,
+        url: data.url,
+        size: formatBytes(data.size),
+        type: data.type || "image",
       };
       syncMedia([newItem, ...media]);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload failed");
+    } finally {
       setIsUploading(false);
-    }, 1000);
+    }
   };
 
   const deleteItem = (id: string) => {
@@ -78,12 +108,27 @@ export default function MediaLibrary() {
             🎨 Back to Editor
           </Link>
           <button 
-            onClick={handleUpload}
+            onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
             className="px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all disabled:opacity-50"
           >
             {isUploading ? "Uploading..." : "📤 Upload New"}
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleUpload(file);
+              }
+              if (e.target.value) {
+                e.target.value = "";
+              }
+            }}
+          />
         </div>
       </div>
 

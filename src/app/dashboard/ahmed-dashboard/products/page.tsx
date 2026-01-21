@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 type Product = {
   id: string;
@@ -12,6 +10,7 @@ type Product = {
   price: string;
   stock: number;
   status: "Active" | "Draft" | "Archived";
+  imageUrl?: string | null;
 };
 
 export default function ProductsPage() {
@@ -19,6 +18,8 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -28,13 +29,20 @@ export default function ProductsPage() {
     price: "",
     stock: 0,
     status: "Active",
+    imageUrl: "",
   });
-
-  const router = useRouter();
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const fetchProducts = async () => {
     try {
@@ -63,22 +71,37 @@ export default function ProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("sku", formData.sku);
+      payload.append("category", formData.category);
+      payload.append("price", formData.price);
+      payload.append("stock", String(formData.stock));
+      payload.append("status", formData.status);
+      payload.append("imageUrl", formData.imageUrl || "");
+      if (imageFile) {
+        payload.append("image", imageFile);
+      }
+
       if (editingProduct) {
         // Update
+        payload.append("id", editingProduct.id);
         await fetch("/api/dashboard/products", {
           method: "PUT",
-          body: JSON.stringify({ ...formData, id: editingProduct.id }),
+          body: payload,
         });
       } else {
         // Create
         await fetch("/api/dashboard/products", {
           method: "POST",
-          body: JSON.stringify(formData),
+          body: payload,
         });
       }
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ name: "", sku: "", category: "", price: "", stock: 0, status: "Active" });
+      setFormData({ name: "", sku: "", category: "", price: "", stock: 0, status: "Active", imageUrl: "" });
+      setImageFile(null);
+      setImagePreview(null);
       fetchProducts();
     } catch (error) {
       alert("Operation failed");
@@ -94,13 +117,18 @@ export default function ProductsPage() {
       price: product.price,
       stock: product.stock,
       status: product.status,
+      imageUrl: product.imageUrl || "",
     });
+    setImageFile(null);
+    setImagePreview(product.imageUrl || null);
     setShowModal(true);
   };
 
   const openCreateModal = () => {
     setEditingProduct(null);
-    setFormData({ name: "", sku: "", category: "", price: "", stock: 0, status: "Active" });
+    setFormData({ name: "", sku: "", category: "", price: "", stock: 0, status: "Active", imageUrl: "" });
+    setImageFile(null);
+    setImagePreview(null);
     setShowModal(true);
   };
 
@@ -154,7 +182,20 @@ export default function ProductsPage() {
                 key={product.id}
                 className="border-b border-slate-200 hover:bg-slate-50"
               >
-                <td className="p-3 font-medium">{product.name}</td>
+                <td className="p-3 font-medium">
+                  <div className="flex items-center gap-3">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-10 w-10 rounded-md object-cover border border-slate-200"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-md border border-dashed border-slate-300 bg-slate-50" />
+                    )}
+                    <span>{product.name}</span>
+                  </div>
+                </td>
                 <td className="p-3 text-slate-500">{product.sku}</td>
                 <td className="p-3 text-slate-500">{product.category}</td>
                 <td className="p-3 font-medium">{product.price}</td>
@@ -258,6 +299,34 @@ export default function ProductsPage() {
                   <option value="Draft">Draft</option>
                   <option value="Archived">Archived</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Product Image</label>
+                <div className="mt-2 flex items-center gap-4">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Product preview"
+                      className="h-16 w-16 rounded-md object-cover border border-slate-200"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-md border border-dashed border-slate-300 bg-slate-50" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="block w-full text-sm"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setImageFile(file);
+                      if (file) {
+                        setImagePreview(URL.createObjectURL(file));
+                      } else {
+                        setImagePreview(formData.imageUrl || null);
+                      }
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-6">

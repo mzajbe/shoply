@@ -1,5 +1,5 @@
 import Link from "next/link";
-import LogoutButton from "../../components/auth/LogoutButton";
+import LogoutButton from "../../../components/auth/LogoutButton";
 
 const themes = [
   {
@@ -61,7 +61,7 @@ export default function ThemeLibrary() {
         <div className="flex items-center gap-3">
           {/* UPDATED: Added Dashboard button to jump back to the main admin page */}
           <Link
-            href="/ahmed-dashboard"
+            href="/dashboard"
             className="inline-flex items-center px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
             📊 View Dashboard
@@ -71,7 +71,7 @@ export default function ThemeLibrary() {
 
           {/* Quick Action: Start from Scratch */}
           <Link
-            href="/ahmed-dashboard/theme/editor"
+            href="/dashboard/theme/editor"
             className="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all hover:scale-105 active:scale-95"
           >
             Build from Scratch
@@ -109,13 +109,13 @@ export default function ThemeLibrary() {
 
               <div className="mt-auto flex flex-col sm:flex-row gap-3">
                 <Link
-                  href={`/ahmed-dashboard/theme/editor/customize?id=${t.id}`}
+                  href={`/your-store-name?id=${t.id}`}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition shadow-md"
                 >
-                  Customize
+                  Live Preview
                 </Link>
                 <Link
-                  href={`/ahmed-dashboard/theme/editor?id=${t.id}&new=true`}
+                  href={`/dashboard/theme/editor?id=${t.id}&new=true`}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition"
                 >
                   Live Editor

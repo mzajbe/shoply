@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const THEMES: Record<string, any> = {
@@ -48,7 +48,7 @@ const THEMES: Record<string, any> = {
 	},
 };
 
-export default function ThemeCustomize() {
+function ThemeCustomizeContent() {
 	const search = useSearchParams();
 	const router = useRouter();
 	const id = search.get("id") || "minimal";
@@ -160,6 +160,14 @@ export default function ThemeCustomize() {
 				</aside>
 			</div>
 		</div>
+	);
+}
+
+export default function ThemeCustomize() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ThemeCustomizeContent />
+		</Suspense>
 	);
 }
 

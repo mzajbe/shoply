@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/ahmed-dashboard")) {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard")) {
     const token =
       request.cookies.get("token")?.value ||
       request.cookies.get("auth-token")?.value;
@@ -22,5 +22,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/ahmed-dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/dashboard/:path*"],
 };
