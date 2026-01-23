@@ -41,7 +41,7 @@ export default function LoginPage() {
             }
 
             // Redirect to the Theme Library after login
-            router.push('/dashboard/ahmed-dashboard/theme');
+            router.push('/dashboard/v1/theme');
 
         } catch (err) {
             setError('An error occurred. Please try again.');
@@ -184,3 +184,4 @@ export default function LoginPage() {
         </div>
     );
 }
+

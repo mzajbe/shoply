@@ -282,7 +282,7 @@ export default function LiveEditor() {
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
     if (!settingsLoaded || !storeSlug) {
-      window.open("/dashboard/ahmed-dashboard/settings", "_blank");
+      window.open("/dashboard/v1/settings", "_blank");
       return;
     }
 
@@ -509,7 +509,7 @@ export default function LiveEditor() {
       {/* HEADER TOOLBAR */}
       <header className="h-16 bg-white border-b px-6 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/ahmed-dashboard/theme" className="text-slate-400 hover:text-slate-600 transition">←</Link>
+          <Link href="/dashboard/v1/theme" className="text-slate-400 hover:text-slate-600 transition">←</Link>
           <span className="font-bold text-xl text-orange-600">Shoply Builder</span>
         </div>
         <div className="flex items-center gap-3">
@@ -1402,7 +1402,7 @@ export default function LiveEditor() {
               )) : (
                 <div className="col-span-4 py-10 text-center">
                   <p className="text-slate-400 mb-4">No images found.</p>
-                  <Link href="/dashboard/ahmed-dashboard/media" className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Go to Library</Link>
+                  <Link href="/dashboard/v1/media" className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Go to Library</Link>
                 </div>
               )}
             </div>
@@ -1412,4 +1412,5 @@ export default function LiveEditor() {
     </div>
   );
 }
+
 

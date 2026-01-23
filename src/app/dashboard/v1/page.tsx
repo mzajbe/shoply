@@ -72,7 +72,7 @@ export default async function AhmedDashboardPage() {
       <section className="mt-6 bg-white rounded-lg shadow border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Recent orders</h3>
-          <Link href="/dashboard/ahmed-dashboard/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
+          <Link href="/dashboard/v1/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -136,5 +136,6 @@ function StatusPill({ status }: { status: Order["status"] }) {
   const cls = status === "Paid" ? "bg-green-100 text-green-800" : status === "Pending" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800";
   return <span className={`${cls} inline-flex items-center rounded-full px-3 py-1 text-xs font-medium`}>{status}</span>;
 }
+
 
 

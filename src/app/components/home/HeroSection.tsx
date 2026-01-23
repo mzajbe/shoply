@@ -28,7 +28,7 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Link
-              href="/dashboard/ahmed-dashboard/theme"
+              href="/dashboard/v1/theme"
               className="inline-flex justify-center items-center px-6 py-3 rounded-xl bg-orange-600 text-white font-semibold hover:bg-orange-700 transition"
             >
               Build my store
@@ -105,3 +105,4 @@ export default function HeroSection() {
     </section>
   );
 }
+
