@@ -77,9 +77,15 @@ export async function setupDatabase() {
         total VARCHAR(50) NOT NULL,
         status VARCHAR(50) NOT NULL,
         date VARCHAR(50) NOT NULL,
+        product_id VARCHAR(50),
+        product_name VARCHAR(255),
+        quantity INTEGER,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await client.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_id VARCHAR(50)');
+    await client.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_name VARCHAR(255)');
+    await client.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS quantity INTEGER');
 
     // Create stats table
     await client.query(`

@@ -37,7 +37,7 @@ export default function RegisterPage() {
         // ignore storage errors
       }
 
-      router.push("/dashboard/ahmed-dashboard/theme");
+      router.push("/dashboard/v1/theme");
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
@@ -158,3 +158,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

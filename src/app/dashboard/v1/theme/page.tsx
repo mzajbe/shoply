@@ -109,7 +109,7 @@ export default function ThemeLibrary() {
 
           {/* Quick Action: Start from Scratch */}
           <Link
-            href="/dashboard/ahmed-dashboard/theme/editor"
+            href="/dashboard/v1/theme/editor"
             className="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all hover:scale-105 active:scale-95"
           >
             Build from Scratch
@@ -155,7 +155,7 @@ export default function ThemeLibrary() {
                   </Link>
                 ) : (
                   <Link
-                    href="/dashboard/ahmed-dashboard/settings"
+                    href="/dashboard/v1/settings"
                     className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-200 text-slate-500 text-sm font-semibold hover:bg-slate-300 transition shadow-md"
                     aria-disabled="true"
                   >
@@ -163,7 +163,7 @@ export default function ThemeLibrary() {
                   </Link>
                 )}
                 <Link
-                  href={`/dashboard/ahmed-dashboard/theme/editor?id=${t.id}&new=true`}
+                  href={`/dashboard/v1/theme/editor?id=${t.id}&new=true`}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition"
                 >
                   Live Editor
@@ -187,3 +187,4 @@ export default function ThemeLibrary() {
     </div>
   );
 }
+

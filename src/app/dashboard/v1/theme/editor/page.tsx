@@ -3,9 +3,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import allProducts from "../../products/product";
 
 type SectionType = "navbar" | "hero" | "features" | "products" | "faq" | "testimonials" | "cta";
+
+type Product = {
+  id: string;
+  name: string;
+  price?: string;
+  imageUrl?: string | null;
+  category?: string | null;
+  status?: string | null;
+};
 
 const THEMES: Record<string, any> = {
   minimal: { name: "Minimal", color: "#6366f1", font: "Inter", preview: "/themes/minimal.png" },
@@ -22,7 +30,7 @@ const THEME_PRESETS: Record<string, any> = {
     font: "Inter",
     sections: [
       { id: "m1", type: "hero", settings: { layout: "spacious", bgColor: "#ffffff" }, content: { title: "Refined Simplicity", subtitle: "Minimalist design for modern brands.", bgImage: "" } },
-      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3 } }
+      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3, source: "all", collection: "" } }
     ]
   },
   modern: {
@@ -38,7 +46,7 @@ const THEME_PRESETS: Record<string, any> = {
     font: "Georgia",
     sections: [
       { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
-      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3 } }
+      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3, source: "all", collection: "" } }
     ]
   },
   bold: {
@@ -97,9 +105,13 @@ export default function LiveEditor() {
   const [showExport, setShowExport] = useState(false);
   const [storeName, setStoreName] = useState("");
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
 
   // Computed: current page sections
   const sections = pageSections[activePage] || [];
+  const hasNavbar = sections.some((section) => section.type === "navbar");
+  const pageLinks = Object.keys(pageSections);
 
   // --- MEDIA MODAL STATE ---
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -266,6 +278,45 @@ export default function LiveEditor() {
     loadSettings();
   }, []);
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await fetch("/api/dashboard/products", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load products");
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setProducts([]);
+      } finally {
+        setProductsLoaded(true);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  const normalizedProducts = useMemo<Product[]>(() => {
+    return (products || []).map((p: any) => ({
+      id: String(p.id ?? ""),
+      name: p.name ?? "Untitled",
+      price: p.price ?? "",
+      imageUrl: p.imageUrl ?? p.image_url ?? null,
+      category: p.category ?? "Uncategorized",
+      status: p.status ?? null,
+    }));
+  }, [products]);
+
+  const liveProducts = useMemo(() => {
+    return normalizedProducts.filter((p) => !p.status || p.status === "Active");
+  }, [normalizedProducts]);
+
+  const productCollections = useMemo(() => {
+    const set = new Set<string>();
+    liveProducts.forEach((p) => {
+      if (p.category) set.add(p.category);
+    });
+    return Array.from(set).sort();
+  }, [liveProducts]);
+
   const storeSlug = useMemo(() => {
     return storeName
       .toLowerCase()
@@ -282,7 +333,7 @@ export default function LiveEditor() {
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
     if (!settingsLoaded || !storeSlug) {
-      window.open("/dashboard/ahmed-dashboard/settings", "_blank");
+      window.open("/dashboard/v1/settings", "_blank");
       return;
     }
 
@@ -479,7 +530,7 @@ export default function LiveEditor() {
         };
       }
       case 'hero': return { title: "New Hero Section", subtitle: "Edit text directly.", bgImage: "", bgSize: "cover", bgPos: "center" };
-      case 'products': return { title: "Featured Products", count: 3, customImages: [] };
+      case 'products': return { title: "Featured Products", count: 3, source: "all", collection: "", customImages: [] };
       case 'features': return { title: "Why Us", items: [{ t: "Fast Shipping", d: "Delivery in 2 days" }, { t: "24/7 Support", d: "Always here" }] };
       case 'faq': return { title: "FAQ", items: [{ q: "Shipping?", a: "Worldwide!" }] };
       case 'testimonials': return { items: [{ name: "Alex S.", text: "Best store ever!", role: "Buyer" }] };
@@ -509,7 +560,7 @@ export default function LiveEditor() {
       {/* HEADER TOOLBAR */}
       <header className="h-16 bg-white border-b px-6 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/ahmed-dashboard/theme" className="text-slate-400 hover:text-slate-600 transition">←</Link>
+          <Link href="/dashboard/v1/theme" className="text-slate-400 hover:text-slate-600 transition">←</Link>
           <span className="font-bold text-xl text-orange-600">Shoply Builder</span>
         </div>
         <div className="flex items-center gap-3">
@@ -736,6 +787,60 @@ export default function LiveEditor() {
                           </div>
                         </>
                       )}
+
+                      {/* PRODUCTS SPECIFIC */}
+                      {activeSection.type === 'products' && (() => {
+                        const sourceValue = activeSection.content.source || "all";
+                        return (
+                          <div className="space-y-3">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Show</label>
+                              <select
+                                value={sourceValue}
+                                onChange={(e) => handleContentChange('source', e.target.value)}
+                                className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                              >
+                                <option value="all">All Products</option>
+                                <option value="collection">Collection (Category)</option>
+                              </select>
+                            </div>
+
+                            {sourceValue === "collection" && (
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Collection</label>
+                                <select
+                                  value={activeSection.content.collection || ""}
+                                  onChange={(e) => handleContentChange('collection', e.target.value)}
+                                  className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                                >
+                                  <option value="">Select category</option>
+                                  {productCollections.map((cat) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                  ))}
+                                </select>
+                                {!productsLoaded && (
+                                  <div className="text-[10px] text-slate-400">Loading categories...</div>
+                                )}
+                                {productsLoaded && productCollections.length === 0 && (
+                                  <div className="text-[10px] text-slate-400">No categories found.</div>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Products Count</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={12}
+                                value={activeSection.content.count ?? 3}
+                                onChange={(e) => handleContentChange('count', Math.max(1, Number(e.target.value) || 1))}
+                                className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* CTA/Button SPECIFIC */}
                       {activeSection.content.button !== undefined && (
@@ -1023,7 +1128,35 @@ export default function LiveEditor() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {sections.map((section, index) => (
+              {!hasNavbar && (
+                <div className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur bg-white">
+                  <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                      <div className="font-black text-lg">{storeName || "Brand"}</div>
+                      <nav className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest">
+                        {pageLinks.map((name) => (
+                          <button
+                            key={name}
+                            onClick={() => switchPage(name)}
+                            className={`hover:text-slate-900 transition ${activePage === name ? "text-slate-900" : "text-slate-500"}`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
+                    <button
+                      onClick={() => switchPage(activePage)}
+                      className="px-4 py-2 rounded-full text-xs font-black text-white shadow-sm hover:shadow-md transition"
+                      style={{ backgroundColor: globalColor }}
+                    >
+                      Shop Now
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {sections.map((section, index) => (
                     <div
                       key={section.id}
                       id={`section-${section.id}`}
@@ -1153,41 +1286,63 @@ export default function LiveEditor() {
                             section.settings.textAlign === 'right' ? 'text-right' :
                               'text-center'}`}
                             style={{ backgroundColor: section.settings.bgColor || 'transparent' }}>
-                            <h3
-                              className="text-3xl mb-12 outline-none"
-                              contentEditable
-                              suppressContentEditableWarning
-                              onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
-                              style={{
-                                color: section.settings.titleColor || undefined,
-                                fontWeight: section.settings.isBold ? '900' : '800',
-                                fontStyle: section.settings.isItalic ? 'italic' : 'normal'
-                              }}
-                            >
-                              {section.content.title}
-                            </h3>
-                            <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${section.settings.textAlign === 'left' ? 'justify-items-start' :
-                              section.settings.textAlign === 'right' ? 'justify-items-end' :
-                                'justify-items-center'}`}>
-                              {allProducts.slice(0, 3).map((p, i) => (
-                                <div key={p.id} className="group/item">
-                                  <div onClick={(e) => { e.stopPropagation(); openMediaPicker(section.id, 'productImage', i); }} className="aspect-[3/4] bg-slate-50 rounded-[28px] mb-5 overflow-hidden border-2 border-transparent hover:border-orange-500/50 shadow-sm transition-all group-hover/item:shadow-md cursor-pointer relative">
-                                    {section.content.customImages?.[i] ? (
-                                      <img src={section.content.customImages[i]} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500" />
-                                    ) : (
-                                      <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-2">
-                                        <span className="text-3xl">🖼️</span>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Image Slot</span>
+                            {(() => {
+                              const source = section.content.source || "all";
+                              const collection = section.content.collection || "";
+                              const count = Number(section.content.count) || 3;
+                              const baseList = source === "collection" && collection
+                                ? liveProducts.filter((p) => p.category === collection)
+                                : liveProducts;
+                              const sectionProducts = baseList.slice(0, count);
+                              return (
+                                <>
+                                  <h3
+                                    className="text-3xl mb-12 outline-none"
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                                    style={{
+                                      color: section.settings.titleColor || undefined,
+                                      fontWeight: section.settings.isBold ? '900' : '800',
+                                      fontStyle: section.settings.isItalic ? 'italic' : 'normal'
+                                    }}
+                                  >
+                                    {section.content.title}
+                                  </h3>
+                                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${section.settings.textAlign === 'left' ? 'justify-items-start' :
+                                    section.settings.textAlign === 'right' ? 'justify-items-end' :
+                                      'justify-items-center'}`}>
+                                    {sectionProducts.length === 0 && (
+                                      <div className="col-span-full text-slate-400 text-sm font-semibold">
+                                        {productsLoaded ? "No products found for this selection." : "Loading products..."}
                                       </div>
                                     )}
+                                    {sectionProducts.map((p, i) => {
+                                      const customImage = section.content.customImages?.[i];
+                                      const imageUrl = customImage || p.imageUrl || "";
+                                      return (
+                                        <div key={p.id || i} className="group/item">
+                                          <div onClick={(e) => { e.stopPropagation(); openMediaPicker(section.id, 'productImage', i); }} className="aspect-[3/4] bg-slate-50 rounded-[28px] mb-5 overflow-hidden border-2 border-transparent hover:border-orange-500/50 shadow-sm transition-all group-hover/item:shadow-md cursor-pointer relative">
+                                            {imageUrl ? (
+                                              <img src={imageUrl} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500" />
+                                            ) : (
+                                              <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                                                <span className="text-3xl">🖼️</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Image Slot</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="px-1 text-center md:text-left">
+                                            <div className="font-extrabold text-lg text-slate-900 leading-tight">{p.name}</div>
+                                            <div className="text-orange-600 font-black text-sm mt-1">{p.price}</div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
-                                  <div className="px-1 text-center md:text-left">
-                                    <div className="font-extrabold text-lg text-slate-900 leading-tight">{p.name}</div>
-                                    <div className="text-orange-600 font-black text-sm mt-1">{p.price}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
 
@@ -1402,7 +1557,7 @@ export default function LiveEditor() {
               )) : (
                 <div className="col-span-4 py-10 text-center">
                   <p className="text-slate-400 mb-4">No images found.</p>
-                  <Link href="/dashboard/ahmed-dashboard/media" className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Go to Library</Link>
+                  <Link href="/dashboard/v1/media" className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Go to Library</Link>
                 </div>
               )}
             </div>
@@ -1412,4 +1567,5 @@ export default function LiveEditor() {
     </div>
   );
 }
+
 

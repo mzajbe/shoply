@@ -12,8 +12,8 @@ export default function DashboardLayout({
     const pathname = usePathname();
 
     // Exclude full-page editor and preview routes from the dashboard layout
-    const isFullPage = pathname.startsWith("/dashboard/ahmed-dashboard/theme/editor") ||
-        pathname.startsWith("/dashboard/ahmed-dashboard/theme/preview");
+    const isFullPage = pathname.startsWith("/dashboard/v1/theme/editor") ||
+        pathname.startsWith("/dashboard/v1/theme/preview");
 
     if (isFullPage) {
         return <>{children}</>;
@@ -36,13 +36,13 @@ function Sidebar() {
     const pathname = usePathname();
 
     const navItems = [
-        { label: "Overview", icon: <IconGrid />, href: "/dashboard/ahmed-dashboard" },
-        { label: "Themes", icon: <IconPalette />, href: "/dashboard/ahmed-dashboard/theme" },
-        { label: "Orders", icon: <IconShoppingCart />, href: "/dashboard/ahmed-dashboard/orders" },
-        { label: "Products", icon: <IconBox />, href: "/dashboard/ahmed-dashboard/products" },
-        { label: "Customers", icon: <IconUsers />, href: "/dashboard/ahmed-dashboard/customers" },
-        { label: "Marketing", icon: <IconMegaphone />, href: "/dashboard/ahmed-dashboard/marketing" },
-        { label: "Settings", icon: <IconCog />, href: "/dashboard/ahmed-dashboard/settings" },
+        { label: "Overview", icon: <IconGrid />, href: "/dashboard/v1" },
+        { label: "Themes", icon: <IconPalette />, href: "/dashboard/v1/theme" },
+        { label: "Orders", icon: <IconShoppingCart />, href: "/dashboard/v1/orders" },
+        { label: "Products", icon: <IconBox />, href: "/dashboard/v1/products" },
+        { label: "Customers", icon: <IconUsers />, href: "/dashboard/v1/customers" },
+        { label: "Marketing", icon: <IconMegaphone />, href: "/dashboard/v1/marketing" },
+        { label: "Settings", icon: <IconCog />, href: "/dashboard/v1/settings" },
     ];
 
     return (
@@ -184,3 +184,4 @@ function IconCog() {
         </svg>
     );
 }
+
