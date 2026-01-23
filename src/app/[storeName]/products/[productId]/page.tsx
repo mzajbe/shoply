@@ -10,6 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/hooks/use-cart";
 
 type Product = {
   id: string;
@@ -35,6 +36,7 @@ export default function ProductDetailsPage() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderStatus, setOrderStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [formData, setFormData] = useState({ name: "", email: "", quantity: 1 });
+  const { addItem, count } = useCart();
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -104,6 +106,7 @@ export default function ProductDetailsPage() {
 
   const primaryColor = theme?.globalColor || "#6366f1";
   const storeHomeHref = storeName ? `/${storeName}` : "/";
+  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/v1/theme/preview";
   const pageLinks = Object.keys(theme?.pageSections || { Home: [] });
 
   const unitPrice = useMemo(() => {
@@ -178,13 +181,25 @@ export default function ProductDetailsPage() {
               ))}
             </nav>
           </div>
-          <Link
-            href={storeHomeHref}
-            className={buttonVariants({ size: "sm" })}
-            style={{ backgroundColor: primaryColor }}
-          >
-            Shop Now
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={storeHomeHref}
+              className={buttonVariants({ size: "sm" })}
+              style={{ backgroundColor: primaryColor }}
+            >
+              Shop Now
+            </Link>
+            <Link
+              href={cartHref}
+              className={buttonVariants({ variant: "outline", size: "icon" })}
+              aria-label="Cart"
+            >
+              <span className="text-base">🛒</span>
+              {count > 0 && (
+                <span className="ml-1 text-[10px] font-black text-slate-700">({count})</span>
+              )}
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -281,7 +296,11 @@ export default function ProductDetailsPage() {
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3">
                   <Button
-                    onClick={() => setShowCheckout(true)}
+                    onClick={() => {
+                      if (product) {
+                        addItem({ id: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl || null }, 1);
+                      }
+                    }}
                     className="w-full"
                     style={{ backgroundColor: primaryColor }}
                   >

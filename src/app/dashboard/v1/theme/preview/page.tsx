@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/hooks/use-cart";
 
 type Product = {
   id: string;
@@ -77,6 +78,7 @@ export default function PreviewPage() {
   const params = useParams();
   const storeNameParam = Array.isArray(params?.storeName) ? params.storeName[0] : params?.storeName;
   const storeName = typeof storeNameParam === "string" ? storeNameParam : "";
+  const { count } = useCart();
 
   useEffect(() => {
     // Load the latest customized data from storage
@@ -189,6 +191,7 @@ export default function PreviewPage() {
   const hasNavbar = sections.some((section: any) => section.type === "navbar");
   const pageLinks = Object.keys(config.pageSections || { Home: [] });
   const basePath = storeName ? `/${storeName}` : "/dashboard/v1/theme/preview";
+  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/v1/theme/preview";
 
   return (
     <main id="top" className="min-h-screen bg-slate-50 text-slate-900 scroll-smooth" style={{ fontFamily: config.globalFont }}>
@@ -213,13 +216,25 @@ export default function PreviewPage() {
                 ))}
               </nav>
             </div>
-            <Link
-              href={basePath}
-              className={buttonVariants({ size: "sm" })}
-              style={{ backgroundColor: config.globalColor }}
-            >
-              Shop Now
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={basePath}
+                className={buttonVariants({ size: "sm" })}
+                style={{ backgroundColor: config.globalColor }}
+              >
+                Shop Now
+              </Link>
+              <Link
+                href={cartHref}
+                className={buttonVariants({ variant: "outline", size: "icon" })}
+                aria-label="Cart"
+              >
+                <span className="text-base">🛒</span>
+                {count > 0 && (
+                  <span className="ml-1 text-[10px] font-black text-slate-700">({count})</span>
+                )}
+              </Link>
+            </div>
           </div>
         </div>
       )}

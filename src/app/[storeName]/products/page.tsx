@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useCart } from "@/hooks/use-cart";
 
 type Product = {
   id: string;
@@ -27,6 +28,7 @@ export default function ProductsListingPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [theme, setTheme] = useState<{ globalColor: string; globalFont: string; pageSections?: Record<string, any[]> } | null>(null);
+  const { addItem, count } = useCart();
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -83,6 +85,7 @@ export default function ProductsListingPage() {
 
   const primaryColor = theme?.globalColor || "#6366f1";
   const storeHomeHref = storeName ? `/${storeName}` : "/";
+  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/v1/theme/preview";
   const pageLinks = Object.keys(theme?.pageSections || { Home: [] });
 
   const visibleProducts = useMemo(() => {
@@ -114,13 +117,25 @@ export default function ProductsListingPage() {
               ))}
             </nav>
           </div>
-          <Link
-            href={storeHomeHref}
-            className={buttonVariants({ size: "sm" })}
-            style={{ backgroundColor: primaryColor }}
-          >
-            Shop Now
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={storeHomeHref}
+              className={buttonVariants({ size: "sm" })}
+              style={{ backgroundColor: primaryColor }}
+            >
+              Shop Now
+            </Link>
+            <Link
+              href={cartHref}
+              className={buttonVariants({ variant: "outline", size: "icon" })}
+              aria-label="Cart"
+            >
+              <span className="text-base">🛒</span>
+              {count > 0 && (
+                <span className="ml-1 text-[10px] font-black text-slate-700">({count})</span>
+              )}
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -171,12 +186,21 @@ export default function ProductsListingPage() {
                   <div className="text-lg font-black" style={{ color: primaryColor }}>
                     {product.price || "Price on request"}
                   </div>
-                  <Link
-                    href={`${storeHomeHref}/products/${encodeURIComponent(product.id)}`}
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
-                    View
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => addItem({ id: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl || null }, 1)}
+                    >
+                      Add
+                    </Button>
+                    <Link
+                      href={`${storeHomeHref}/products/${encodeURIComponent(product.id)}`}
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                      View
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
