@@ -1,10 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { useSearchParams, useParams } from "next/navigation";
+import Link from "next/link";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/Footer/Footer";
-import allProducts from "../../products/product";
+
+type Product = {
+  id: string;
+  name: string;
+  price?: string;
+  imageUrl?: string | null;
+  category?: string | null;
+  status?: string | null;
+};
 
 const PREVIEW_PRESETS: Record<string, any> = {
   minimal: {
@@ -12,7 +21,7 @@ const PREVIEW_PRESETS: Record<string, any> = {
     globalFont: "Inter",
     sections: [
       { id: "m1", type: "hero", settings: { layout: "spacious", bgColor: "#ffffff" }, content: { title: "Refined Simplicity", subtitle: "Minimalist design for modern brands.", bgImage: "" } },
-      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3 } }
+      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3, source: "all", collection: "" } }
     ]
   },
   modern: {
@@ -28,7 +37,7 @@ const PREVIEW_PRESETS: Record<string, any> = {
     globalFont: "Georgia",
     sections: [
       { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
-      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3 } }
+      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3, source: "all", collection: "" } }
     ]
   },
   bold: {
@@ -59,7 +68,12 @@ const PREVIEW_PRESETS: Record<string, any> = {
 
 export default function PreviewPage() {
   const [config, setConfig] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   const search = useSearchParams();
+  const params = useParams();
+  const storeNameParam = Array.isArray(params?.storeName) ? params.storeName[0] : params?.storeName;
+  const storeName = typeof storeNameParam === "string" ? storeNameParam : "";
 
   useEffect(() => {
     // Load the latest customized data from storage
@@ -99,7 +113,7 @@ export default function PreviewPage() {
       // 4. Final fallback: basic demo
       const demoSections = [
         { id: "hero-1", type: "hero", settings: { layout: "spacious", bgColor: "#ffffff" }, content: { title: "Your Storefront", subtitle: "A clean demo layout.", bgImage: "" } },
-        { id: "products-1", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Featured Products", count: 3 } }
+        { id: "products-1", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Featured Products", count: 3, source: "all", collection: "" } }
       ];
       setConfig({
         globalColor: "#6366f1",
@@ -123,6 +137,37 @@ export default function PreviewPage() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [search]);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await fetch("/api/dashboard/products", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load products");
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setProducts([]);
+      } finally {
+        setProductsLoaded(true);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  const normalizedProducts = useMemo<Product[]>(() => {
+    return (products || []).map((p: any) => ({
+      id: String(p.id ?? ""),
+      name: p.name ?? "Untitled",
+      price: p.price ?? "",
+      imageUrl: p.imageUrl ?? p.image_url ?? null,
+      category: p.category ?? "Uncategorized",
+      status: p.status ?? null,
+    }));
+  }, [products]);
+
+  const liveProducts = useMemo(() => {
+    return normalizedProducts.filter((p) => !p.status || p.status === "Active");
+  }, [normalizedProducts]);
 
   if (!config) {
     return (
@@ -220,31 +265,51 @@ export default function PreviewPage() {
                 <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 ${section.settings?.textAlign === 'left' ? 'justify-items-start' :
                   section.settings?.textAlign === 'right' ? 'justify-items-end' :
                     'justify-items-center'}`}>
-                  {allProducts.slice(0, 3).map((p: any, i: number) => (
-                    <div key={p.id} className="group cursor-pointer">
-                      <div className="aspect-[4/5] bg-slate-100 rounded-3xl mb-6 overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500">
-                        {/* Logic: Show custom image if picked in Editor, otherwise show price */}
-                        {section.content.customImages?.[i] ? (
-                          <img
-                            src={section.content.customImages[i]}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                            alt={p.name}
-                          />
-                        ) : (
-                          <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-xl">
-                            {p.price}
+                  {(() => {
+                    const source = section.content.source || "all";
+                    const collection = section.content.collection || "";
+                    const count = Number(section.content.count) || 3;
+                    const baseList = source === "collection" && collection
+                      ? liveProducts.filter((p) => p.category === collection)
+                      : liveProducts;
+                    const sectionProducts = baseList.slice(0, count);
+                    if (sectionProducts.length === 0) {
+                      return (
+                        <div className="col-span-full text-slate-400 text-sm font-semibold">
+                          {productsLoaded ? "No products found for this selection." : "Loading products..."}
+                        </div>
+                      );
+                    }
+                    return sectionProducts.map((p: any, i: number) => {
+                      const customImage = section.content.customImages?.[i];
+                      const imageUrl = customImage || p.imageUrl || "";
+                      const productHref = storeName ? `/${storeName}/products/${encodeURIComponent(p.id)}` : "#";
+                      return (
+                        <Link key={p.id || i} href={productHref} className="group cursor-pointer">
+                          <div className="aspect-[4/5] bg-slate-100 rounded-3xl mb-6 overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500">
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                alt={p.name}
+                              />
+                            ) : (
+                              <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-xl">
+                                {p.price}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <h3 className="text-xl font-bold text-slate-900">{p.name}</h3>
-                      <p
-                        className="text-lg font-bold mt-1"
-                        style={{ color: config.globalColor }}
-                      >
-                        {p.price}
-                      </p>
-                    </div>
-                  ))}
+                          <h3 className="text-xl font-bold text-slate-900">{p.name}</h3>
+                          <p
+                            className="text-lg font-bold mt-1"
+                            style={{ color: config.globalColor }}
+                          >
+                            {p.price}
+                          </p>
+                        </Link>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </div>
