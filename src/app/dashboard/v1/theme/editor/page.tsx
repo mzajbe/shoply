@@ -110,6 +110,8 @@ export default function LiveEditor() {
 
   // Computed: current page sections
   const sections = pageSections[activePage] || [];
+  const hasNavbar = sections.some((section) => section.type === "navbar");
+  const pageLinks = Object.keys(pageSections);
 
   // --- MEDIA MODAL STATE ---
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -1126,7 +1128,35 @@ export default function LiveEditor() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {sections.map((section, index) => (
+              {!hasNavbar && (
+                <div className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur bg-white">
+                  <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                      <div className="font-black text-lg">{storeName || "Brand"}</div>
+                      <nav className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest">
+                        {pageLinks.map((name) => (
+                          <button
+                            key={name}
+                            onClick={() => switchPage(name)}
+                            className={`hover:text-slate-900 transition ${activePage === name ? "text-slate-900" : "text-slate-500"}`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
+                    <button
+                      onClick={() => switchPage(activePage)}
+                      className="px-4 py-2 rounded-full text-xs font-black text-white shadow-sm hover:shadow-md transition"
+                      style={{ backgroundColor: globalColor }}
+                    >
+                      Shop Now
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {sections.map((section, index) => (
                     <div
                       key={section.id}
                       id={`section-${section.id}`}

@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/Footer/Footer";
 
 type Product = {
@@ -177,12 +176,50 @@ export default function PreviewPage() {
     );
   }
 
-  const sections = config.pageSections?.[config.activePage] || config.sections || [];
+  const pageParam = search.get("page");
+  const activePage =
+    pageParam && config.pageSections?.[pageParam]
+      ? pageParam
+      : (config.activePage || "Home");
+  const sections = config.pageSections?.[activePage] || config.sections || [];
   const hasNavbar = sections.some((section: any) => section.type === "navbar");
+  const pageLinks = Object.keys(config.pageSections || { Home: [] });
+  const basePath = storeName ? `/${storeName}` : "/dashboard/v1/theme/preview";
 
   return (
     <main id="top" className="min-h-screen bg-white text-slate-900 scroll-smooth" style={{ fontFamily: config.globalFont }}>
-      {!hasNavbar && <Navbar />}
+      {!hasNavbar && (
+        <div
+          className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur"
+          style={{ backgroundColor: "white" }}
+        >
+          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <div className="font-black text-lg">
+                {storeName ? storeName.replace(/-+/g, " ") : "Brand"}
+              </div>
+              <nav className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest">
+                {pageLinks.map((name: string) => (
+                  <Link
+                    key={name}
+                    href={`${basePath}?page=${encodeURIComponent(name)}`}
+                    className={`hover:text-slate-900 transition ${activePage === name ? "text-slate-900" : "text-slate-500"}`}
+                  >
+                    {name}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+            <Link
+              href={basePath}
+              className="px-4 py-2 rounded-full text-xs font-black text-white shadow-sm hover:shadow-md transition"
+              style={{ backgroundColor: config.globalColor }}
+            >
+              Shop Now
+            </Link>
+          </div>
+        </div>
+      )}
 
       {sections.map((section: any) => (
         <section key={section.id} id={`section-${section.id}`} className="w-full">
