@@ -52,3 +52,26 @@ export async function POST(request: Request) {
         client.release();
     }
 }
+
+export async function PATCH(request: Request) {
+    const client = await pool.connect();
+    try {
+        const body = await request.json();
+        const { id, status } = body || {};
+        if (!id || !status) {
+            return NextResponse.json({ message: 'Missing id or status' }, { status: 400 });
+        }
+        const result = await client.query(
+            'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+        if (result.rowCount === 0) {
+            return NextResponse.json({ message: 'Order not found' }, { status: 404 });
+        }
+        return NextResponse.json(result.rows[0]);
+    } catch (error) {
+        return NextResponse.json({ message: 'Error updating order' }, { status: 500 });
+    } finally {
+        client.release();
+    }
+}

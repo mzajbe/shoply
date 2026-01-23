@@ -1,18 +1,55 @@
-import React from "react";
-import Link from "next/link";
-import { fetchOrders } from "@/lib/data";
+"use client";
+
+import React, { useEffect, useState } from "react";
 
 type Order = {
   id: string;
   customer: string;
   email: string;
   total: string;
-  status: "Paid" | "Pending" | "Refunded";
+  status: "Paid" | "Pending" | "Refunded" | "Cancelled";
   date: string;
 };
 
-export default async function OrdersPage() {
-  const allOrders: Order[] = await fetchOrders();
+export default function OrdersPage() {
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("/api/dashboard/orders", { cache: "no-store" });
+      const data = await res.json();
+      setAllOrders(Array.isArray(data) ? data : []);
+    } catch {
+      setAllOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const updateStatus = async (id: string, status: Order["status"]) => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/dashboard/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      await fetchOrders();
+      setSelectedOrder(null);
+    } catch {
+      alert("Failed to update status.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="p-8">
@@ -50,7 +87,12 @@ export default async function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {allOrders.map((order) => (
+            {loading && (
+              <tr>
+                <td colSpan={7} className="p-6 text-center text-slate-400">Loading orders...</td>
+              </tr>
+            )}
+            {!loading && allOrders.map((order) => (
               <tr key={order.id} className="border-b border-slate-200 hover:bg-slate-50">
                 <td className="p-3 font-medium">#{order.id}</td>
                 <td className="p-3">{order.customer}</td>
@@ -61,13 +103,62 @@ export default async function OrdersPage() {
                 </td>
                 <td className="p-3 text-slate-500">{order.date}</td>
                 <td className="p-3 text-center">
-                  <button className="text-orange-600 hover:underline text-sm">Details</button>
+                  <button
+                    className="text-orange-600 hover:underline text-sm"
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    Details
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Update Order Status</h3>
+              <button onClick={() => setSelectedOrder(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div><span className="font-semibold">Order:</span> #{selectedOrder.id}</div>
+              <div><span className="font-semibold">Customer:</span> {selectedOrder.customer}</div>
+              <div><span className="font-semibold">Total:</span> {selectedOrder.total}</div>
+            </div>
+            <div className="mt-4">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Status</label>
+              <select
+                className="mt-2 w-full border border-slate-200 rounded-lg p-2 text-sm"
+                value={selectedOrder.status}
+                onChange={(e) => setSelectedOrder({ ...selectedOrder, status: e.target.value as Order["status"] })}
+              >
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+                <option value="Refunded">Refunded</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button
+                className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600"
+                onClick={() => setSelectedOrder(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg bg-orange-600 text-white"
+                onClick={() => updateStatus(selectedOrder.id, selectedOrder.status)}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
