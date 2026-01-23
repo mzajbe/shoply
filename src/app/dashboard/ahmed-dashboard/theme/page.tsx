@@ -1,3 +1,6 @@
+ "use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import LogoutButton from "@/app/components/auth/LogoutButton";
 
@@ -46,7 +49,42 @@ const themes = [
   },
 ];
 
+type StoreSettings = {
+  store_name?: string;
+};
+
+function slugifyStoreName(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export default function ThemeLibrary() {
+  const [storeName, setStoreName] = useState("");
+  const [loadingSettings, setLoadingSettings] = useState(true);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch("/api/dashboard/settings");
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = (await res.json()) as StoreSettings;
+        setStoreName(data.store_name || "");
+      } catch (error) {
+        setStoreName("");
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const storeSlug = useMemo(() => slugifyStoreName(storeName), [storeName]);
+  const storePath = storeSlug ? `/${storeSlug}.store` : "";
+  const canPreview = !loadingSettings && storeSlug.length > 0;
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header Section */}
@@ -108,12 +146,22 @@ export default function ThemeLibrary() {
               </p>
 
               <div className="mt-auto flex flex-col sm:flex-row gap-3">
-                <Link
-                  href={`/your-store-name?id=${t.id}`}
-                  className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition shadow-md"
-                >
-                  Live Preview
-                </Link>
+                {canPreview ? (
+                  <Link
+                    href={storePath}
+                    className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition shadow-md"
+                  >
+                    Live Preview
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard/ahmed-dashboard/settings"
+                    className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-200 text-slate-500 text-sm font-semibold hover:bg-slate-300 transition shadow-md"
+                    aria-disabled="true"
+                  >
+                    Set Store Name
+                  </Link>
+                )}
                 <Link
                   href={`/dashboard/ahmed-dashboard/theme/editor?id=${t.id}&new=true`}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition"

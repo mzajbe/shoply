@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import allProducts from "../../products/product";
@@ -95,6 +95,8 @@ export default function LiveEditor() {
   const [saveStatus, setSaveStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [storeName, setStoreName] = useState("");
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   // Computed: current page sections
   const sections = pageSections[activePage] || [];
@@ -248,14 +250,43 @@ export default function LiveEditor() {
     setTimeout(() => setSaveStatus(""), 2000);
   };
 
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch("/api/dashboard/settings");
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = await res.json();
+        setStoreName(data.store_name || "");
+      } catch (error) {
+        setStoreName("");
+      } finally {
+        setSettingsLoaded(true);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const storeSlug = useMemo(() => {
+    return storeName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }, [storeName]);
+  const storePath = storeSlug ? `/${storeSlug}.store` : "";
+
   // NEW: Handle Preview
   const handlePreview = () => {
     const previewData = { globalColor, globalFont, sections };
     // Save the current state so the preview page can read it
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
-    // FIXED: Point to the new absolute path to avoid 404
-    window.open("/your-store-name", "_blank");
+    if (!settingsLoaded || !storeSlug) {
+      window.open("/dashboard/ahmed-dashboard/settings", "_blank");
+      return;
+    }
+
+    window.open(storePath, "_blank");
   };
 
   // --- THEME & PAGE LOGIC ---
