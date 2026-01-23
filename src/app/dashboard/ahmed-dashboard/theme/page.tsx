@@ -1,5 +1,5 @@
 import Link from "next/link";
-import LogoutButton from "../../components/auth/LogoutButton";
+import LogoutButton from "@/app/components/auth/LogoutButton";
 
 const themes = [
   {
@@ -71,7 +71,7 @@ export default function ThemeLibrary() {
 
           {/* Quick Action: Start from Scratch */}
           <Link
-            href="/dashboard/theme/editor"
+            href="/dashboard/ahmed-dashboard/theme/editor"
             className="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all hover:scale-105 active:scale-95"
           >
             Build from Scratch
@@ -115,7 +115,7 @@ export default function ThemeLibrary() {
                   Live Preview
                 </Link>
                 <Link
-                  href={`/dashboard/theme/editor?id=${t.id}&new=true`}
+                  href={`/dashboard/ahmed-dashboard/theme/editor?id=${t.id}&new=true`}
                   className="flex-1 text-center px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition"
                 >
                   Live Editor

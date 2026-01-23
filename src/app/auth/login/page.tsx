@@ -40,8 +40,8 @@ export default function LoginPage() {
                 // ignore storage errors
             }
 
-            // FIXED: Always redirect to the Theme Library first after login
-            router.push('/dashboard/theme');
+            // Redirect to the Theme Library after login
+            router.push('/dashboard/ahmed-dashboard/theme');
 
         } catch (err) {
             setError('An error occurred. Please try again.');

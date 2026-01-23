@@ -72,7 +72,7 @@ export default async function AhmedDashboardPage() {
       <section className="mt-6 bg-white rounded-lg shadow border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Recent orders</h3>
-          <Link href="/ahmed-dashboard/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
+          <Link href="/dashboard/ahmed-dashboard/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
         </div>
 
         <div className="overflow-x-auto">

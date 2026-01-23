@@ -73,8 +73,8 @@ export default function ThemeCustomize() {
 		setTimeout(() => setSaved(false), 1500);
 		const params = new URLSearchParams({ id, color, font, layout });
 
-		// FIXED: Point to /ahmed-dashboard/theme/editor instead of /dashboard/theme/editor
-		router.push(`/ahmed-dashboard/theme/editor?${params.toString()}`);
+		// Route to the editor under the dashboard namespace.
+		router.push(`/dashboard/ahmed-dashboard/theme/editor?${params.toString()}`);
 	}
 
 	return (
