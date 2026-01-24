@@ -36,38 +36,6 @@ const PREVIEW_PRESETS: Record<string, any> = {
       { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
     ]
   },
-  classic: {
-    globalColor: "#10b981",
-    globalFont: "Georgia",
-    sections: [
-      { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
-      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3, source: "all", collection: "" } }
-    ]
-  },
-  bold: {
-    globalColor: "#eab308",
-    globalFont: "Inter",
-    sections: [
-      { id: "bd1", type: "hero", settings: { layout: "spacious", bgColor: "#121212", titleColor: "#ffffff" }, content: { title: "UNLEASH THE POWER", subtitle: "High energy design for high energy brands.", bgImage: "" } },
-      { id: "bd2", type: "cta", settings: { bgColor: "#1a1a1a" }, content: { title: "Join the Dark Side", button: "Get Started Now" } }
-    ]
-  },
-  elegant: {
-    globalColor: "#c2410c",
-    globalFont: "Georgia",
-    sections: [
-      { id: "el1", type: "hero", settings: { layout: "center", bgColor: "#fff7ed" }, content: { title: "Pure Sophistication", subtitle: "The finest selection for the finest taste.", bgImage: "" } },
-      { id: "el2", type: "testimonials", settings: { bgColor: "#ffffff" }, content: { items: [{ name: "Sophia R.", text: "Absolutely stunning template.", role: "CEO" }] } }
-    ]
-  },
-  tech: {
-    globalColor: "#06b6d4",
-    globalFont: "Inter",
-    sections: [
-      { id: "tk1", type: "hero", settings: { layout: "spacious", bgColor: "#0f172a", titleColor: "#22d3ee" }, content: { title: "Future Forward", subtitle: "Building the digital landscape of tomorrow.", bgImage: "" } },
-      { id: "tk2", type: "faq", settings: { bgColor: "#1e293b", titleColor: "#ffffff" }, content: { title: "System Knowledge", items: [{ q: "Uptime?", a: "99.9% guaranteed." }] } }
-    ]
-  },
 };
 
 export default function PreviewPage() {

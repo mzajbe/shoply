@@ -18,10 +18,6 @@ type Product = {
 const THEMES: Record<string, any> = {
   minimal: { name: "Minimal", color: "#6366f1", font: "Inter", preview: "/themes/minimal.png" },
   modern: { name: "Modern", color: "#fb7185", font: "Poppins", preview: "/themes/modern.png" },
-  classic: { name: "Classic", color: "#10b981", font: "Georgia", preview: "/themes/classic.png" },
-  bold: { name: "Bold & Dark", color: "#1a1a1a", font: "Inter", preview: "/themes/dark.png" },
-  elegant: { name: "Elegant", color: "#c2410c", font: "Georgia", preview: "/themes/elegant.png" },
-  tech: { name: "Tech-Forward", color: "#06b6d4", font: "Inter", preview: "/themes/tech.png" },
 };
 
 const THEME_PRESETS: Record<string, any> = {
@@ -41,39 +37,9 @@ const THEME_PRESETS: Record<string, any> = {
       { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
     ]
   },
-  classic: {
-    color: "#10b981",
-    font: "Georgia",
-    sections: [
-      { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
-      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3, source: "all", collection: "" } }
-    ]
-  },
-  bold: {
-    color: "#eab308",
-    font: "Inter",
-    sections: [
-      { id: "bd1", type: "hero", settings: { layout: "spacious", bgColor: "#121212", titleColor: "#ffffff" }, content: { title: "UNLEASH THE POWER", subtitle: "High energy design for high energy brands.", bgImage: "" } },
-      { id: "bd2", type: "cta", settings: { bgColor: "#1a1a1a" }, content: { title: "Join the Dark Side", button: "Get Started Now" } }
-    ]
-  },
-  elegant: {
-    color: "#c2410c",
-    font: "Georgia",
-    sections: [
-      { id: "el1", type: "hero", settings: { layout: "center", bgColor: "#fff7ed" }, content: { title: "Pure Sophistication", subtitle: "The finest selection for the finest taste.", bgImage: "" } },
-      { id: "el2", type: "testimonials", settings: { bgColor: "#ffffff" }, content: { items: [{ name: "Sophia R.", text: "Absolutely stunning template.", role: "CEO" }] } }
-    ]
-  },
-  tech: {
-    color: "#06b6d4",
-    font: "Inter",
-    sections: [
-      { id: "tk1", type: "hero", settings: { layout: "spacious", bgColor: "#0f172a", titleColor: "#22d3ee" }, content: { title: "Future Forward", subtitle: "Building the digital landscape of tomorrow.", bgImage: "" } },
-      { id: "tk2", type: "faq", settings: { bgColor: "#1e293b", titleColor: "#ffffff" }, content: { title: "System Knowledge", items: [{ q: "Uptime?", a: "99.9% guaranteed." }] } }
-    ]
-  },
 };
+
+const PREMIUM_THEME_IDS = new Set(["modern"]);
 
 interface Section {
   id: string;
@@ -107,6 +73,10 @@ export default function LiveEditor() {
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoaded, setProductsLoaded] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [billingError, setBillingError] = useState("");
 
   // Computed: current page sections
   const sections = pageSections[activePage] || [];
@@ -138,6 +108,25 @@ export default function LiveEditor() {
     const isNew = search.get("new") === "true";
 
     async function loadInitialData() {
+      let currentIsPremium = false;
+      try {
+        const billingRes = await fetch("/api/billing/status", { cache: "no-store" });
+        const billingData = await billingRes.json();
+        currentIsPremium = !!billingData?.isPremium;
+      } catch {
+        currentIsPremium = false;
+      } finally {
+        setIsPremium(currentIsPremium);
+      }
+
+      const requestedThemeId = urlThemeId || "minimal";
+      const isPremiumTheme = PREMIUM_THEME_IDS.has(requestedThemeId);
+      const canUseRequestedTheme = !isPremiumTheme || currentIsPremium;
+      const effectiveThemeId = canUseRequestedTheme ? requestedThemeId : "minimal";
+      if (isPremiumTheme && !currentIsPremium) {
+        setShowUpgrade(true);
+      }
+
       let loadedFromCloud = false;
 
       // 1. TRY CLOUD FIRST
@@ -146,6 +135,10 @@ export default function LiveEditor() {
         const data = await res.json();
         if (data.config) {
           const config = data.config;
+          if (config.themeId && PREMIUM_THEME_IDS.has(config.themeId) && !currentIsPremium) {
+            setShowUpgrade(true);
+            loadedFromCloud = false;
+          } else {
           // If it's a new theme selection from library, we might want to prioritize the preset
           // but only if the user explicitly clicked "new" and it's a DIFFERENT theme.
           if (!(isNew && urlThemeId && config.themeId !== urlThemeId)) {
@@ -155,6 +148,7 @@ export default function LiveEditor() {
             if (config.activePage) setActivePage(config.activePage);
             loadedFromCloud = true;
             console.log("Loaded from Cloud Project");
+          }
           }
         }
       } catch (e) { console.error("Cloud fetch failed", e); }
@@ -182,8 +176,8 @@ export default function LiveEditor() {
 
       // 3. FALLBACK TO PRESETS
       if (!loadedFromDraft) {
-        if (urlThemeId && THEME_PRESETS[urlThemeId]) {
-          const preset = THEME_PRESETS[urlThemeId];
+        if (effectiveThemeId && THEME_PRESETS[effectiveThemeId]) {
+          const preset = THEME_PRESETS[effectiveThemeId];
           setGlobalColor(search.get("color") || preset.color);
           setGlobalFont(search.get("font") || preset.font);
           setPageSections({ "Home": preset.sections });
@@ -340,8 +334,28 @@ export default function LiveEditor() {
     window.open(storePath, "_blank");
   };
 
+  const startPremiumCheckout = async () => {
+    setBillingError("");
+    setProcessingPayment(true);
+    try {
+      const res = await fetch("/api/billing/aamarpay/create", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data?.paymentUrl) {
+        throw new Error(data?.message || "Payment initiation failed");
+      }
+      window.location.href = data.paymentUrl;
+    } catch (error: any) {
+      setBillingError(error?.message || "Unable to start checkout");
+      setProcessingPayment(false);
+    }
+  };
+
   // --- THEME & PAGE LOGIC ---
   const applyTheme = (themeId: string, fullReset = false) => {
+    if (PREMIUM_THEME_IDS.has(themeId) && !isPremium) {
+      setShowUpgrade(true);
+      return;
+    }
     const theme = THEMES[themeId];
     const preset = THEME_PRESETS[themeId];
     if (theme) {
@@ -1026,23 +1040,32 @@ export default function LiveEditor() {
                 <div>
                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Template Switching</h3>
                   <div className="grid grid-cols-2 gap-3 mb-10">
-                    {Object.entries(THEMES).map(([tid, tdata]: [string, any]) => (
-                      <button
-                        key={tid}
-                        onClick={() => applyTheme(tid)}
-                        onDoubleClick={() => applyTheme(tid, true)}
-                        className={`group relative p-2 rounded-2xl border-2 transition-all overflow-hidden ${globalColor === tdata.color ? 'border-orange-500 bg-orange-50' : 'border-slate-100 hover:border-slate-300'}`}
-                        title="Click to apply colors, Double-click to reset content"
-                      >
-                        <img src={tdata.preview} className="w-full aspect-[4/3] object-cover rounded-xl mb-2 grayscale-[0.5] group-hover:grayscale-0 transition-all" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 block text-center pb-1">{tdata.name}</span>
-                        {globalColor === tdata.color && (
-                          <div className="absolute top-2 right-2 bg-orange-500 text-white p-1 rounded-full shadow-lg">
-                            <span className="text-[8px]">✓</span>
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                    {Object.entries(THEMES).map(([tid, tdata]: [string, any]) => {
+                      const locked = PREMIUM_THEME_IDS.has(tid) && !isPremium;
+                      return (
+                        <button
+                          key={tid}
+                          onClick={() => (locked ? setShowUpgrade(true) : applyTheme(tid))}
+                          onDoubleClick={() => (!locked ? applyTheme(tid, true) : null)}
+                          className={`group relative p-2 rounded-2xl border-2 transition-all overflow-hidden ${globalColor === tdata.color ? 'border-orange-500 bg-orange-50' : 'border-slate-100 hover:border-slate-300'} ${locked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          title={locked ? "Premium theme - upgrade required" : "Click to apply colors, Double-click to reset content"}
+                        >
+                          {PREMIUM_THEME_IDS.has(tid) && (
+                            <div className="absolute top-2 left-2 bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full">
+                              Premium
+                            </div>
+                          )}
+                          <img src={tdata.preview} className="w-full aspect-[4/3] object-cover rounded-xl mb-2 grayscale-[0.5] group-hover:grayscale-0 transition-all" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 block text-center pb-1">{tdata.name}</span>
+                          {globalColor === tdata.color && (
+                            <div className="absolute top-2 right-2 bg-orange-500 text-white p-1 rounded-full shadow-lg">
+                              <span className="text-[8px]">✓</span>
+                            </div>
+                          )}
+                          {locked && <div className="absolute inset-0 bg-slate-900/20" />}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Design Overrides</h3>
@@ -1522,6 +1545,66 @@ export default function LiveEditor() {
         </div>
       )}
 
+      {showUpgrade && (
+        <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-8 backdrop-blur-md">
+          <div className="bg-white rounded-[36px] w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr]">
+              <div className="p-10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+                <div className="text-xs font-black uppercase tracking-[0.4em] text-amber-300">Premium Theme</div>
+                <h2 className="mt-4 text-3xl font-black leading-tight">Modern is a premium template.</h2>
+                <p className="mt-4 text-sm text-slate-200 leading-relaxed">
+                  Upgrade to Premium to unlock Modern theme, premium layout blocks, and priority support.
+                </p>
+                <ul className="mt-6 space-y-3 text-sm text-slate-100">
+                  <li>* Modern theme access + updates</li>
+                  <li>* Premium design blocks</li>
+                  <li>* Priority support</li>
+                </ul>
+              </div>
+              <div className="p-8 flex flex-col gap-6">
+                <div className="rounded-2xl border border-slate-200 p-6">
+                  <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Monthly Plan</div>
+                  <div className="mt-3 flex items-end gap-2">
+                    <div className="text-4xl font-black text-slate-900">199</div>
+                    <div className="text-sm text-slate-500 mb-1">TK / month</div>
+                  </div>
+                  <div className="mt-4 text-xs text-slate-500">Auto-renews monthly. Cancel any time.</div>
+                </div>
+                {billingError && (
+                  <div className="rounded-xl bg-rose-50 text-rose-700 text-xs font-bold uppercase tracking-widest px-4 py-2 border border-rose-200">
+                    {billingError}
+                  </div>
+                )}
+                <button
+                  onClick={startPremiumCheckout}
+                  disabled={processingPayment}
+                  className="w-full px-6 py-3 rounded-xl bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg hover:brightness-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {processingPayment ? "Redirecting..." : "Pay with AamarPay"}
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/dashboard/v1/theme"
+                    className="text-center px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold"
+                  >
+                    Theme Library
+                  </Link>
+                  <button
+                    onClick={() => setShowUpgrade(false)}
+                    className="text-center px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold"
+                  >
+                    Not now
+                  </button>
+                </div>
+                <div className="text-[10px] text-slate-400 leading-relaxed">
+                  Payments are processed securely via AamarPay sandbox.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MEDIA MODAL */}
       {showMediaModal && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-10 backdrop-blur-md">
@@ -1567,5 +1650,6 @@ export default function LiveEditor() {
     </div>
   );
 }
+
 
 
