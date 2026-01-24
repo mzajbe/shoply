@@ -31,9 +31,81 @@ const PREVIEW_PRESETS: Record<string, any> = {
   modern: {
     globalColor: "#fb7185",
     globalFont: "Poppins",
+    themeMood: "bold",
     sections: [
-      { id: "mo1", type: "hero", settings: { layout: "center", bgColor: "#fff1f2" }, content: { title: "Bold & Vibrant", subtitle: "Express your brand with high contrast.", bgImage: "" } },
-      { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
+      {
+        id: "mv1",
+        type: "heroVideo",
+        settings: { layout: "center", bgColor: "#0f172a", titleColor: "#ffffff", subtitleColor: "#e2e8f0" },
+        content: {
+          title: "Modern. Premium. Magnetic.",
+          subtitle: "Bold visual language with cinematic motion and premium polish.",
+          videoUrl: "",
+          marqueeText: "Premium look   |   Modern theme   |   High conversion   |   Built for growth"
+        }
+      },
+      {
+        id: "mv2",
+        type: "split",
+        settings: { layout: "spacious", bgColor: "#0f172a" },
+        content: {
+          title: "Split layouts with glassmorphism.",
+          subtitle: "Layered gradients, depth, and bold typography to spotlight your hero products.",
+          imageUrl: "/themes/modern.png",
+          bullets: ["Glass cards", "Layered gradients", "Responsive layout"]
+        }
+      },
+      {
+        id: "mv3",
+        type: "stats",
+        settings: { bgColor: "#111827" },
+        content: {
+          title: "Numbers that move",
+          items: [{ label: "Conversion", value: "32%" }, { label: "AOV", value: "1990" }, { label: "Repeat", value: "41%" }]
+        }
+      },
+      {
+        id: "mv4",
+        type: "products",
+        settings: { bgColor: "#0b1220" },
+        content: { title: "Featured drops", count: 4, source: "all", collection: "", quickView: true, featuredCount: 2 }
+      },
+      {
+        id: "mv5",
+        type: "testimonialsSlider",
+        settings: { bgColor: "#0b1220" },
+        content: {
+          items: [
+            { name: "Ava Chen", role: "Founder", text: "The Modern theme feels like a luxury brand site." },
+            { name: "Leo Park", role: "Marketing Lead", text: "We saw higher engagement after switching." },
+            { name: "Mira Khan", role: "Owner", text: "Fast, beautiful, and easy to customize." }
+          ]
+        }
+      },
+      {
+        id: "mv6",
+        type: "beforeAfter",
+        settings: { bgColor: "#0f172a" },
+        content: {
+          title: "Before vs After",
+          beforeUrl: "/themes/minimal.png",
+          afterUrl: "/themes/modern.png",
+          labelBefore: "Before",
+          labelAfter: "After"
+        }
+      },
+      {
+        id: "mv7",
+        type: "trust",
+        settings: { bgColor: "#0b1220" },
+        content: { title: "Trusted by founders", items: ["Secure checkout", "Fast delivery", "Premium support", "30-day returns"] }
+      },
+      {
+        id: "mv8",
+        type: "cta",
+        settings: { bgColor: "#111827" },
+        content: { title: "Ready to launch a premium storefront?", button: "Get Started" }
+      }
     ]
   },
 };
@@ -42,6 +114,8 @@ export default function PreviewPage() {
   const [config, setConfig] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoaded, setProductsLoaded] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<any | null>(null);
+  const [parallaxOffset, setParallaxOffset] = useState(0);
   const search = useSearchParams();
   const params = useParams();
   const storeNameParam = Array.isArray(params?.storeName) ? params.storeName[0] : params?.storeName;
@@ -75,6 +149,7 @@ export default function PreviewPage() {
         setConfig({
           globalColor: preset.globalColor,
           globalFont: preset.globalFont,
+          themeMood: preset.themeMood || "bold",
           sections: preset.sections,
           pageSections: { Home: preset.sections },
           activePage: "Home",
@@ -91,6 +166,7 @@ export default function PreviewPage() {
       setConfig({
         globalColor: "#6366f1",
         globalFont: "Inter",
+        themeMood: "bold",
         sections: demoSections,
         pageSections: { Home: demoSections },
         activePage: "Home",
@@ -127,6 +203,16 @@ export default function PreviewPage() {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = Math.min(window.scrollY * 0.15, 120);
+      setParallaxOffset(offset);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const normalizedProducts = useMemo<Product[]>(() => {
     return (products || []).map((p: any) => ({
       id: String(p.id ?? ""),
@@ -158,11 +244,19 @@ export default function PreviewPage() {
   const sections = config.pageSections?.[activePage] || config.sections || [];
   const hasNavbar = sections.some((section: any) => section.type === "navbar");
   const pageLinks = Object.keys(config.pageSections || { Home: [] });
+  const themeMood = config.themeMood || "bold";
+  const isModern = config.themeId === "modern";
   const basePath = storeName ? `/${storeName}` : "/dashboard/v1/theme/preview";
   const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/v1/theme/preview";
 
+  const baseThemeClass = isModern
+    ? themeMood === "soft"
+      ? "bg-slate-50 text-slate-900"
+      : "bg-slate-950 text-white"
+    : "bg-slate-50 text-slate-900";
+
   return (
-    <main id="top" className="min-h-screen bg-slate-50 text-slate-900 scroll-smooth" style={{ fontFamily: config.globalFont }}>
+    <main id="top" className={`min-h-screen scroll-smooth ${baseThemeClass}`} style={{ fontFamily: config.globalFont }}>
       {!hasNavbar && (
         <div
           className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur bg-white/80"
@@ -246,6 +340,46 @@ export default function PreviewPage() {
             </div>
           )}
 
+          {section.type === 'heroVideo' && (
+            <div
+              className={`py-24 px-6 md:px-10 relative overflow-hidden w-full flex flex-col justify-center ${section.settings?.textAlign === 'left' ? 'items-start text-left' :
+                section.settings?.textAlign === 'right' ? 'items-end text-right' :
+                  'items-center text-center'}`}
+              style={{
+                backgroundColor: section.settings?.bgColor || "#0f172a"
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute -top-24 -right-24 w-80 h-80 bg-pink-500/40 blur-3xl rounded-full" />
+                <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-cyan-400/40 blur-3xl rounded-full" />
+                <svg className="absolute inset-0 opacity-20" viewBox="0 0 600 600">
+                  <circle cx="120" cy="140" r="90" stroke="white" strokeWidth="1" fill="none" className="animate-pulse" />
+                  <circle cx="480" cy="420" r="110" stroke="white" strokeWidth="1" fill="none" className="animate-pulse" />
+                </svg>
+              </div>
+              <div className="max-w-5xl mx-auto relative z-10">
+                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-300 mb-6">Premium Hero</div>
+                <h1 className="text-5xl md:text-6xl leading-tight font-black" style={{
+                  color: section.settings?.titleColor || "#ffffff",
+                  transform: `translateY(${parallaxOffset * -0.2}px)`
+                }}>{section.content.title}</h1>
+                <p className="mt-6 text-xl md:text-2xl opacity-90 max-w-2xl mx-auto" style={{
+                  color: section.settings?.subtitleColor || "#e2e8f0",
+                  transform: `translateY(${parallaxOffset * -0.1}px)`
+                }}>{section.content.subtitle}</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button style={{ backgroundColor: config.globalColor, color: "#0f172a" }}>Shop Now</Button>
+                  <Button variant="outline" className="border-white/40 text-white">Watch Preview</Button>
+                </div>
+              </div>
+              <div className="mt-12 border-t border-white/10 overflow-hidden">
+                <div className="py-4 text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 animate-pulse">
+                  {section.content.marqueeText || "Premium look   |   Modern theme   |   Built to convert"}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 1. HERO SECTION */}
           {section.type === 'hero' && (
             <div
@@ -270,6 +404,51 @@ export default function PreviewPage() {
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Button style={{ backgroundColor: config.globalColor }}>Shop Now</Button>
                   <Button variant="outline">Explore</Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.type === 'split' && (
+            <div className="py-20 px-6 md:px-10" style={{ backgroundColor: section.settings?.bgColor || "#0f172a" }}>
+              <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                <div className="space-y-6">
+                  <h2 className="text-4xl font-black text-white">{section.content.title}</h2>
+                  <p className="text-slate-200 text-lg">{section.content.subtitle}</p>
+                  <ul className="space-y-2 text-sm text-slate-200">
+                    {(section.content.bullets || []).map((item: string, i: number) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: config.globalColor }} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-0 bg-white/10 blur-2xl rounded-[32px]" />
+                  <div className="relative rounded-[32px] overflow-hidden border border-white/10 shadow-2xl bg-white/10 backdrop-blur">
+                    {section.content.imageUrl ? (
+                      <img src={section.content.imageUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="aspect-[4/3] bg-white/10" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.type === 'stats' && (
+            <div className="py-16 px-6 md:px-10" style={{ backgroundColor: section.settings?.bgColor || "#0f172a" }}>
+              <div className="max-w-5xl mx-auto">
+                <h3 className="text-3xl font-black text-center text-white">{section.content.title}</h3>
+                <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  {(section.content.items || []).map((item: any, i: number) => (
+                    <div key={i} className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur p-6 text-center">
+                      <AnimatedStat value={String(item.value)} />
+                      <div className="text-xs uppercase tracking-widest text-slate-200 mt-2">{item.label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -318,14 +497,16 @@ export default function PreviewPage() {
                         </div>
                       );
                     }
+                    const featuredCount = Number(section.content.featuredCount) || 0;
                     return sectionProducts.map((p: any, i: number) => {
                       const customImage = section.content.customImages?.[i];
                       const imageUrl = customImage || p.imageUrl || "";
                       const productHref = storeName ? `/${storeName}/products/${encodeURIComponent(p.id)}` : "#";
+                      const isFeatured = i < featuredCount;
                       return (
                         <Link key={p.id || i} href={productHref} className="w-full">
-                          <Card className="overflow-hidden">
-                            <div className="aspect-[4/5] bg-slate-100">
+                          <Card className={`overflow-hidden ${isModern ? "bg-white/5 border-white/10" : ""}`}>
+                            <div className="aspect-[4/5] bg-slate-100 relative">
                               {imageUrl ? (
                                 <img
                                   src={imageUrl}
@@ -336,6 +517,22 @@ export default function PreviewPage() {
                                 <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-xs">
                                   {p.price}
                                 </div>
+                              )}
+                              {isFeatured && (
+                                <div className="absolute top-3 left-3 text-[10px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
+                                  Featured
+                                </div>
+                              )}
+                              {section.content.quickView && (
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setQuickViewProduct(p);
+                                  }}
+                                  className="absolute bottom-3 right-3 text-[10px] font-black uppercase tracking-widest bg-white/90 text-slate-900 px-3 py-1 rounded-full"
+                                >
+                                  Quick view
+                                </button>
                               )}
                             </div>
                             <CardHeader className="pb-2">
@@ -420,6 +617,51 @@ export default function PreviewPage() {
             </div>
           )}
 
+          {section.type === 'testimonialsSlider' && (
+            <div className="py-20 px-6 md:px-10" style={{ backgroundColor: section.settings?.bgColor || "#0b1220" }}>
+              <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-10">
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Testimonials</div>
+                  <h3 className="mt-4 text-3xl font-black text-white">What founders say</h3>
+                </div>
+                <TestimonialSlider items={section.content.items || []} />
+              </div>
+            </div>
+          )}
+
+          {section.type === 'beforeAfter' && (
+            <div className="py-20 px-6 md:px-10" style={{ backgroundColor: section.settings?.bgColor || "#0f172a" }}>
+              <div className="max-w-5xl mx-auto text-center">
+                <h3 className="text-3xl md:text-4xl font-black text-white">{section.content.title}</h3>
+                <div className="mt-10">
+                  <BeforeAfterSlider
+                    beforeUrl={section.content.beforeUrl}
+                    afterUrl={section.content.afterUrl}
+                    labelBefore={section.content.labelBefore}
+                    labelAfter={section.content.labelAfter}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section.type === 'trust' && (
+            <div className="py-14 px-6 md:px-10" style={{ backgroundColor: section.settings?.bgColor || "#0b1220" }}>
+              <div className="max-w-5xl mx-auto">
+                <div className="text-center text-white text-sm font-black uppercase tracking-widest mb-8">
+                  {section.content.title}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {(section.content.items || []).map((item: string, i: number) => (
+                    <div key={i} className="rounded-full border border-white/10 bg-white/10 backdrop-blur px-4 py-3 text-xs font-bold text-white text-center">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 5. TESTIMONIALS SECTION */}
           {section.type === 'testimonials' && (
             <div className={`py-24 px-6 w-full ${section.settings?.textAlign === 'left' ? 'text-left' :
@@ -475,7 +717,153 @@ export default function PreviewPage() {
           )}
         </section>
       ))}
+
+      {isModern && (
+        <Link
+          href={cartHref}
+          className="fixed bottom-6 right-6 z-40 rounded-full px-5 py-3 text-xs font-black uppercase tracking-widest shadow-xl"
+          style={{ backgroundColor: config.globalColor, color: "#0f172a" }}
+        >
+          Cart {count > 0 ? `(${count})` : ""}
+        </Link>
+      )}
+
+      {quickViewProduct && (
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-[28px] max-w-3xl w-full overflow-hidden shadow-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              <div className="bg-slate-100">
+                {quickViewProduct.imageUrl ? (
+                  <img src={quickViewProduct.imageUrl} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="aspect-[4/5] bg-slate-200" />
+                )}
+              </div>
+              <div className="p-8">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-400">Quick View</div>
+                <h3 className="mt-3 text-2xl font-black text-slate-900">{quickViewProduct.name}</h3>
+                <div className="mt-2 text-lg font-black" style={{ color: config.globalColor }}>
+                  {quickViewProduct.price}
+                </div>
+                <p className="mt-4 text-sm text-slate-500">
+                  Premium materials, curated details, and a modern finish designed for your best customers.
+                </p>
+                <div className="mt-6 flex gap-3">
+                  <button className="px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest text-white" style={{ backgroundColor: config.globalColor }}>
+                    Add to cart
+                  </button>
+                  <button
+                    onClick={() => setQuickViewProduct(null)}
+                    className="px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest border border-slate-200 text-slate-600"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </main>
+  );
+}
+
+function AnimatedStat({ value }: { value: string }) {
+  const [display, setDisplay] = useState(0);
+  const raw = String(value || "");
+  const target = Number(raw.replace(/[^0-9.]/g, "")) || 0;
+  const suffix = raw.replace(/[0-9.]/g, "");
+
+  useEffect(() => {
+    let frame = 0;
+    const total = 30;
+    const timer = setInterval(() => {
+      frame += 1;
+      const next = Math.round((target * frame) / total);
+      setDisplay(next);
+      if (frame >= total) clearInterval(timer);
+    }, 30);
+    return () => clearInterval(timer);
+  }, [target]);
+
+  return (
+    <div className="text-3xl font-black text-white">
+      {display}{suffix}
+    </div>
+  );
+}
+
+function TestimonialSlider({ items }: { items: Array<{ name: string; role: string; text: string }> }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!items.length) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % items.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [items.length]);
+
+  if (!items.length) return null;
+  const active = items[index];
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/10 backdrop-blur p-8 text-white">
+      <p className="text-lg md:text-2xl font-semibold leading-relaxed">"{active.text}"</p>
+      <div className="mt-6 text-xs uppercase tracking-widest text-slate-200">
+        {active.name} - {active.role}
+      </div>
+      <div className="mt-6 flex items-center justify-center gap-2">
+        {items.map((_, i) => (
+          <span key={i} className={`h-1.5 w-6 rounded-full ${i === index ? "bg-white" : "bg-white/30"}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BeforeAfterSlider({
+  beforeUrl,
+  afterUrl,
+  labelBefore,
+  labelAfter
+}: {
+  beforeUrl: string;
+  afterUrl: string;
+  labelBefore: string;
+  labelAfter: string;
+}) {
+  const [value, setValue] = useState(50);
+  return (
+    <div className="relative rounded-[32px] overflow-hidden border border-white/10 bg-white/5">
+      <div className="aspect-[16/9] relative">
+        {beforeUrl && (
+          <img src={beforeUrl} className="absolute inset-0 w-full h-full object-cover" />
+        )}
+        <div className="absolute inset-0 overflow-hidden" style={{ width: `${value}%` }}>
+          {afterUrl && (
+            <img src={afterUrl} className="w-full h-full object-cover" />
+          )}
+        </div>
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full px-6">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={value}
+              onChange={(e) => setValue(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        </div>
+        <div className="absolute top-4 left-4 text-[10px] uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-full">
+          {labelBefore || "Before"}
+        </div>
+        <div className="absolute top-4 right-4 text-[10px] uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-full">
+          {labelAfter || "After"}
+        </div>
+      </div>
+    </div>
   );
 }
