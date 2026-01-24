@@ -4,7 +4,20 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-type SectionType = "navbar" | "hero" | "features" | "products" | "faq" | "testimonials" | "cta";
+type SectionType =
+  | "navbar"
+  | "hero"
+  | "heroVideo"
+  | "split"
+  | "stats"
+  | "products"
+  | "features"
+  | "faq"
+  | "testimonials"
+  | "testimonialsSlider"
+  | "beforeAfter"
+  | "trust"
+  | "cta";
 
 type Product = {
   id: string;
@@ -32,14 +45,92 @@ const THEME_PRESETS: Record<string, any> = {
   modern: {
     color: "#fb7185",
     font: "Poppins",
+    mood: "bold",
     sections: [
-      { id: "mo1", type: "hero", settings: { layout: "center", bgColor: "#fff1f2" }, content: { title: "Bold & Vibrant", subtitle: "Express your brand with high contrast.", bgImage: "" } },
-      { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
+      {
+        id: "mv1",
+        type: "heroVideo",
+        settings: { layout: "center", bgColor: "#0f172a", titleColor: "#ffffff", subtitleColor: "#e2e8f0" },
+        content: {
+          title: "Modern. Premium. Magnetic.",
+          subtitle: "Bold visual language with cinematic motion and premium polish.",
+          videoUrl: "",
+          marqueeText: "Premium look   |   Modern theme   |   High conversion   |   Built for growth"
+        }
+      },
+      {
+        id: "mv2",
+        type: "split",
+        settings: { layout: "spacious", bgColor: "#0f172a" },
+        content: {
+          title: "Split layouts with glassmorphism.",
+          subtitle: "Layered gradients, depth, and bold typography to spotlight your hero products.",
+          imageUrl: "/themes/modern.png",
+          bullets: ["Glass cards", "Layered gradients", "Responsive layout"]
+        }
+      },
+      {
+        id: "mv3",
+        type: "stats",
+        settings: { bgColor: "#111827" },
+        content: {
+          title: "Numbers that move",
+          items: [{ label: "Conversion", value: "32%" }, { label: "AOV", value: "1990" }, { label: "Repeat", value: "41%" }]
+        }
+      },
+      {
+        id: "mv4",
+        type: "products",
+        settings: { bgColor: "#0b1220" },
+        content: { title: "Featured drops", count: 4, source: "all", collection: "", quickView: true, featuredCount: 2 }
+      },
+      {
+        id: "mv5",
+        type: "testimonialsSlider",
+        settings: { bgColor: "#0b1220" },
+        content: {
+          items: [
+            { name: "Ava Chen", role: "Founder", text: "The Modern theme feels like a luxury brand site." },
+            { name: "Leo Park", role: "Marketing Lead", text: "We saw higher engagement after switching." },
+            { name: "Mira Khan", role: "Owner", text: "Fast, beautiful, and easy to customize." }
+          ]
+        }
+      },
+      {
+        id: "mv6",
+        type: "beforeAfter",
+        settings: { bgColor: "#0f172a" },
+        content: {
+          title: "Before vs After",
+          beforeUrl: "/themes/minimal.png",
+          afterUrl: "/themes/modern.png",
+          labelBefore: "Before",
+          labelAfter: "After"
+        }
+      },
+      {
+        id: "mv7",
+        type: "trust",
+        settings: { bgColor: "#0b1220" },
+        content: { title: "Trusted by founders", items: ["Secure checkout", "Fast delivery", "Premium support", "30-day returns"] }
+      },
+      {
+        id: "mv8",
+        type: "cta",
+        settings: { bgColor: "#111827" },
+        content: { title: "Ready to launch a premium storefront?", button: "Get Started" }
+      }
     ]
   },
 };
 
 const PREMIUM_THEME_IDS = new Set(["modern"]);
+const MODERN_COLOR_PRESETS = [
+  { name: "Aurora", color: "#7c3aed", mood: "bold" },
+  { name: "Coral", color: "#fb7185", mood: "bold" },
+  { name: "Ocean", color: "#22d3ee", mood: "soft" },
+  { name: "Sage", color: "#34d399", mood: "soft" }
+];
 
 interface Section {
   id: string;
@@ -62,6 +153,7 @@ export default function LiveEditor() {
   // --- STATE MANAGEMENT ---
   const [globalColor, setGlobalColor] = useState("#6366f1");
   const [globalFont, setGlobalFont] = useState("Inter");
+  const [themeMood, setThemeMood] = useState<"bold" | "soft">("bold");
   const [pageSections, setPageSections] = useState<Record<string, Section[]>>({ "Home": [] });
   const [activePage, setActivePage] = useState("Home");
   const [activeTab, setActiveTab] = useState<"edit" | "pages" | "theme">("edit");
@@ -77,11 +169,23 @@ export default function LiveEditor() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [billingError, setBillingError] = useState("");
+  const [toast, setToast] = useState<{ message: string; kind?: "success" | "error"; href?: string; label?: string } | null>(null);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
 
   // Computed: current page sections
   const sections = pageSections[activePage] || [];
   const hasNavbar = sections.some((section) => section.type === "navbar");
   const pageLinks = Object.keys(pageSections);
+  const baseSectionTypes: SectionType[] = ["navbar", "hero", "products", "features", "faq", "testimonials", "cta"];
+  const premiumSectionTypes: SectionType[] = ["heroVideo", "split", "stats", "testimonialsSlider", "beforeAfter", "trust"];
+  const sectionTypesForUI = [...baseSectionTypes, ...premiumSectionTypes];
+  const activeThemeId = search.get("id") || "default";
+  const isModernTheme = activeThemeId === "modern";
+  const previewThemeClass = isModernTheme
+    ? themeMood === "soft"
+      ? "bg-white text-slate-900"
+      : "bg-slate-950 text-white"
+    : "bg-white text-slate-900";
 
   // --- MEDIA MODAL STATE ---
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -145,6 +249,7 @@ export default function LiveEditor() {
             setPageSections(config.pageSections || { "Home": [] });
             setGlobalColor(config.globalColor || "#6366f1");
             setGlobalFont(config.globalFont || "Inter");
+            setThemeMood(config.themeMood || "bold");
             if (config.activePage) setActivePage(config.activePage);
             loadedFromCloud = true;
             console.log("Loaded from Cloud Project");
@@ -168,6 +273,7 @@ export default function LiveEditor() {
             if (parsed.pageSections) setPageSections(parsed.pageSections);
             setGlobalColor(parsed.globalColor || "#6366f1");
             setGlobalFont(parsed.globalFont || "Inter");
+            setThemeMood(parsed.themeMood || "bold");
             if (parsed.activePage) setActivePage(parsed.activePage);
             loadedFromDraft = true;
           }
@@ -180,6 +286,7 @@ export default function LiveEditor() {
           const preset = THEME_PRESETS[effectiveThemeId];
           setGlobalColor(search.get("color") || preset.color);
           setGlobalFont(search.get("font") || preset.font);
+          setThemeMood(preset.mood || "bold");
           setPageSections({ "Home": preset.sections });
         } else {
           setPageSections({ "Home": [{ id: "hero-1", type: "hero", settings: { layout: "spacious" }, content: { title: "Your Brand, Your Way", subtitle: "Build your dream store.", bgImage: "", bgSize: "cover", bgPos: "center" } }] });
@@ -202,9 +309,10 @@ export default function LiveEditor() {
 
   // AUTO-SYNC Preview Data (Instant for live preview tab)
   useEffect(() => {
-    const previewData = { globalColor, globalFont, sections: pageSections[activePage], activePage, pageSections };
+    const urlThemeId = search.get("id") || "default";
+    const previewData = { themeId: urlThemeId, globalColor, globalFont, themeMood, sections: pageSections[activePage], activePage, pageSections };
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
-  }, [globalColor, globalFont, pageSections, activePage]);
+  }, [globalColor, globalFont, themeMood, pageSections, activePage, search]);
 
   // DEBOUNCED AUTO-SAVE Project Draft (Every 1.5s after last change)
   useEffect(() => {
@@ -215,6 +323,7 @@ export default function LiveEditor() {
         themeId: urlThemeId || "default",
         globalColor,
         globalFont,
+        themeMood,
         pageSections,
         activePage
       };
@@ -240,7 +349,7 @@ export default function LiveEditor() {
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [globalColor, globalFont, pageSections, activePage, search]);
+  }, [globalColor, globalFont, themeMood, pageSections, activePage, search]);
 
   const saveToLocalStorage = () => {
     const urlThemeId = search.get("id");
@@ -248,12 +357,58 @@ export default function LiveEditor() {
       themeId: urlThemeId || "default",
       globalColor,
       globalFont,
+      themeMood,
       pageSections,
       activePage
     };
     localStorage.setItem("shoply_project_draft", JSON.stringify(projectData));
     setSaveStatus("Saved!");
     setTimeout(() => setSaveStatus(""), 2000);
+  };
+
+  const publishToCloud = async () => {
+    const urlThemeId = search.get("id");
+    const projectData = {
+      themeId: urlThemeId || "default",
+      globalColor,
+      globalFont,
+      themeMood,
+      pageSections,
+      activePage
+    };
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/themes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: projectData })
+      });
+      if (!res.ok) {
+        throw new Error("Publish failed");
+      }
+      setSaveStatus("Published");
+      setTimeout(() => setSaveStatus(""), 2000);
+      if (storeSlug) {
+        setPublishedUrl(storePath);
+      }
+      setToast({
+        message: storeSlug ? `Published! Live at ${publicUrl}` : "Published! Add a store name to get a public URL.",
+        kind: "success",
+        href: storeSlug ? storePath : undefined,
+        label: storeSlug ? "Open Store" : undefined
+      });
+      setTimeout(() => setToast(null), 4000);
+    } catch (error) {
+      console.error("Publish error:", error);
+      setSaveStatus("Publish failed");
+      setTimeout(() => setSaveStatus(""), 2500);
+      setToast({ message: "Publish failed. Please try again.", kind: "error" });
+      setTimeout(() => setToast(null), 4000);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -319,10 +474,12 @@ export default function LiveEditor() {
       .replace(/^-+|-+$/g, "");
   }, [storeName]);
   const storePath = storeSlug ? `/${storeSlug}.store` : "";
+  const publicUrl = storeSlug ? `${storeSlug}.store` : "";
 
   // NEW: Handle Preview
   const handlePreview = () => {
-    const previewData = { globalColor, globalFont, sections };
+    const urlThemeId = search.get("id") || "default";
+    const previewData = { themeId: urlThemeId, globalColor, globalFont, themeMood, sections };
     // Save the current state so the preview page can read it
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
@@ -361,6 +518,9 @@ export default function LiveEditor() {
     if (theme) {
       setGlobalColor(theme.color);
       setGlobalFont(theme.font);
+      if (preset?.mood) {
+        setThemeMood(preset.mood);
+      }
 
       if (fullReset && preset) {
         if (confirm("Reset current page content to template defaults?")) {
@@ -544,10 +704,35 @@ export default function LiveEditor() {
         };
       }
       case 'hero': return { title: "New Hero Section", subtitle: "Edit text directly.", bgImage: "", bgSize: "cover", bgPos: "center" };
-      case 'products': return { title: "Featured Products", count: 3, source: "all", collection: "", customImages: [] };
+      case 'heroVideo':
+        return {
+          title: "Premium hero video",
+          subtitle: "High-impact motion for modern brands.",
+          videoUrl: "",
+          marqueeText: "Premium look   |   Modern theme   |   Built to convert"
+        };
+      case 'split':
+        return {
+          title: "Split spotlight",
+          subtitle: "Showcase product details with glassmorphism.",
+          imageUrl: "/themes/modern.png",
+          bullets: ["Layered gradients", "Glass cards", "Bold typography"]
+        };
+      case 'stats':
+        return {
+          title: "Animated stats",
+          items: [{ label: "Conversion", value: "32%" }, { label: "AOV", value: "1990" }, { label: "Repeat", value: "41%" }]
+        };
+      case 'products': return { title: "Featured Products", count: 3, source: "all", collection: "", customImages: [], quickView: false, featuredCount: 0 };
       case 'features': return { title: "Why Us", items: [{ t: "Fast Shipping", d: "Delivery in 2 days" }, { t: "24/7 Support", d: "Always here" }] };
       case 'faq': return { title: "FAQ", items: [{ q: "Shipping?", a: "Worldwide!" }] };
       case 'testimonials': return { items: [{ name: "Alex S.", text: "Best store ever!", role: "Buyer" }] };
+      case 'testimonialsSlider':
+        return { items: [{ name: "Ava C.", text: "Premium look, simple setup.", role: "Founder" }, { name: "Noah K.", text: "Customers love it.", role: "Owner" }] };
+      case 'beforeAfter':
+        return { title: "Before vs After", beforeUrl: "/themes/minimal.png", afterUrl: "/themes/modern.png", labelBefore: "Before", labelAfter: "After" };
+      case 'trust':
+        return { title: "Trusted by founders", items: ["Secure checkout", "Fast delivery", "Premium support"] };
       case 'cta': return { title: "Ready to start?", button: "Get Started" };
       default: return { title: "New Section" };
     }
@@ -592,6 +777,16 @@ export default function LiveEditor() {
           >
             Preview Site
           </button>
+          {publishedUrl && (
+            <a
+              href={publishedUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="px-4 py-2 border border-emerald-600 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition"
+            >
+              View Live
+            </a>
+          )}
           <button onClick={saveToLocalStorage} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
             {saveStatus === "Saved!" ? "✓ Saved" : "💾 Save Draft"}
           </button>
@@ -655,24 +850,34 @@ export default function LiveEditor() {
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Add New Block</h4>
                     <div className="grid grid-cols-3 gap-2">
-                      {(['navbar', 'hero', 'products', 'features', 'faq', 'testimonials', 'cta'] as SectionType[]).map(type => (
-                        <button
-                          key={type}
-                          onClick={() => addSection(type)}
-                          className="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all gap-1 saturate-[0.8] hover:saturate-100"
-                        >
-                          <span className="text-lg">
-                            {type === 'navbar' && '=='}
-                            {type === 'hero' && '🖼️'}
-                            {type === 'products' && '🛍️'}
-                            {type === 'features' && '✨'}
-                            {type === 'faq' && '❓'}
-                            {type === 'testimonials' && '💬'}
-                            {type === 'cta' && '⚡'}
-                          </span>
-                          <span className="text-[9px] font-bold capitalize">{type}</span>
-                        </button>
-                      ))}
+                      {sectionTypesForUI.map((type) => {
+                        const locked = premiumSectionTypes.includes(type) && !isPremium;
+                        return (
+                          <button
+                            key={type}
+                            onClick={() => (locked ? setShowUpgrade(true) : addSection(type))}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all gap-1 saturate-[0.8] hover:saturate-100 ${locked ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-100 hover:border-orange-500 hover:bg-orange-50"}`}
+                            title={locked ? "Premium block - upgrade required" : "Add block"}
+                          >
+                            <span className="text-[10px] font-bold">
+                              {type === "navbar" && "NAV"}
+                              {type === "hero" && "HERO"}
+                              {type === "heroVideo" && "VIDEO"}
+                              {type === "split" && "SPLIT"}
+                              {type === "stats" && "STATS"}
+                              {type === "products" && "PROD"}
+                              {type === "features" && "FEAT"}
+                              {type === "faq" && "FAQ"}
+                              {type === "testimonials" && "TEST"}
+                              {type === "testimonialsSlider" && "SLIDE"}
+                              {type === "beforeAfter" && "B/A"}
+                              {type === "trust" && "TRUST"}
+                              {type === "cta" && "CTA"}
+                            </span>
+                            <span className="text-[9px] font-bold capitalize">{type}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </section>
@@ -1102,6 +1307,48 @@ export default function LiveEditor() {
                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest px-1">Changes the font for the entire storefront</p>
                       </div>
                     </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Modern Mood</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => (isPremium ? setThemeMood("bold") : setShowUpgrade(true))}
+                          className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border ${themeMood === "bold" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
+                        >
+                          Bold
+                        </button>
+                        <button
+                          onClick={() => (isPremium ? setThemeMood("soft") : setShowUpgrade(true))}
+                          className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border ${themeMood === "soft" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
+                        >
+                          Soft
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest px-1">Premium mood presets for modern theme</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Color Presets</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {MODERN_COLOR_PRESETS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            onClick={() => {
+                              if (!isPremium) {
+                                setShowUpgrade(true);
+                                return;
+                              }
+                              setGlobalColor(preset.color);
+                              setThemeMood(preset.mood === "soft" ? "soft" : "bold");
+                            }}
+                            className="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition"
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{preset.name}</span>
+                            <span className="w-4 h-4 rounded-full border border-slate-200" style={{ backgroundColor: preset.color }} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1127,7 +1374,7 @@ export default function LiveEditor() {
         <main id="top" className="flex-1 overflow-y-auto bg-slate-100/50 p-4 md:p-12 scroll-smooth">
           {/* Device Mockup Wrapper */}
           <div className="max-w-5xl mx-auto">
-            <div className="bg-white shadow-2xl rounded-[32px] overflow-hidden border border-slate-200 min-h-screen relative" style={{ fontFamily: globalFont }}>
+            <div className={`${previewThemeClass} shadow-2xl rounded-[32px] overflow-hidden border border-slate-200 min-h-screen relative`} style={{ fontFamily: globalFont }}>
 
               {/* Fake Browser Toolbar */}
               <div className="h-10 bg-slate-50 border-b flex items-center px-4 gap-2">
@@ -1264,6 +1511,52 @@ export default function LiveEditor() {
                           </div>
                         )}
 
+                        {section.type === 'heroVideo' && (
+                          <div className={`py-24 px-6 md:px-16 relative overflow-hidden ${section.settings.textAlign === 'left' ? 'text-left' :
+                            section.settings.textAlign === 'right' ? 'text-right' :
+                              'text-center'}`}
+                            style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="absolute inset-0 opacity-40 pointer-events-none">
+                              <div className="absolute -top-24 -right-24 w-72 h-72 bg-pink-500/40 blur-3xl rounded-full" />
+                              <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-cyan-400/40 blur-3xl rounded-full" />
+                            </div>
+                            <div className="relative max-w-4xl mx-auto">
+                              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-pink-300 mb-6">Premium Hero</div>
+                              <h1
+                                className="text-4xl md:text-6xl font-black leading-tight outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                                style={{ color: section.settings.titleColor || '#ffffff' }}
+                              >
+                                {section.content.title}
+                              </h1>
+                              <p
+                                className="mt-6 text-lg md:text-xl text-slate-200 outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { subtitle: e.currentTarget.innerText })}
+                                style={{ color: section.settings.subtitleColor || '#e2e8f0' }}
+                              >
+                                {section.content.subtitle}
+                              </p>
+                              <div className="mt-10 inline-flex items-center gap-3">
+                                <button className="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-lg" style={{ backgroundColor: globalColor, color: '#0f172a' }}>
+                                  Shop now
+                                </button>
+                                <button className="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest border border-white/30 text-white">
+                                  Watch preview
+                                </button>
+                              </div>
+                            </div>
+                            <div className="mt-12 overflow-hidden border-t border-white/10">
+                              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 py-4 animate-pulse">
+                                {section.content.marqueeText || "Premium look   |   Modern theme   |   Built to convert"}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {section.type === 'hero' && (
                           <div className={`py-24 md:py-36 px-6 md:px-20 text-white relative overflow-hidden flex flex-col justify-center ${section.settings.textAlign === 'left' ? 'items-start text-left' :
                             section.settings.textAlign === 'right' ? 'items-end text-right' :
@@ -1301,6 +1594,72 @@ export default function LiveEditor() {
                                 {section.content.button}
                               </button>
                             )}
+                          </div>
+                        )}
+
+                        {section.type === 'split' && (
+                          <div className="py-20 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                              <div className="space-y-6">
+                                <h3
+                                  className="text-3xl md:text-4xl font-black text-white outline-none"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                                >
+                                  {section.content.title}
+                                </h3>
+                                <p
+                                  className="text-slate-200 outline-none"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => updateContent(section.id, { subtitle: e.currentTarget.innerText })}
+                                >
+                                  {section.content.subtitle}
+                                </p>
+                                <ul className="space-y-2 text-sm text-slate-200">
+                                  {(section.content.bullets || []).map((item: string, i: number) => (
+                                    <li key={i} className="flex items-center gap-2">
+                                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: globalColor }} />
+                                      <span>{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div className="relative">
+                                <div className="absolute inset-0 bg-white/10 blur-2xl rounded-[32px]" />
+                                <div className="relative rounded-[32px] overflow-hidden border border-white/10 shadow-2xl bg-white/10 backdrop-blur">
+                                  {section.content.imageUrl ? (
+                                    <img src={section.content.imageUrl} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="aspect-[4/3] bg-white/10" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'stats' && (
+                          <div className="py-16 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="max-w-5xl mx-auto">
+                              <h3
+                                className="text-2xl md:text-3xl font-black text-white text-center outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                              >
+                                {section.content.title}
+                              </h3>
+                              <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                {(section.content.items || []).map((item: any, i: number) => (
+                                  <div key={i} className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur p-6 text-center">
+                                    <AnimatedStat value={String(item.value)} />
+                                    <div className="text-xs uppercase tracking-widest text-slate-200 mt-2">{item.label}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         )}
 
@@ -1430,6 +1789,58 @@ export default function LiveEditor() {
                           </div>
                         )}
 
+                        {section.type === 'testimonialsSlider' && (
+                          <div className="py-20 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="max-w-4xl mx-auto">
+                              <div className="text-center mb-10">
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Testimonials</div>
+                                <h3 className="mt-4 text-3xl font-black text-white">What founders say</h3>
+                              </div>
+                              <TestimonialSlider items={section.content.items || []} />
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'beforeAfter' && (
+                          <div className="py-20 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="max-w-5xl mx-auto text-center">
+                              <h3
+                                className="text-3xl md:text-4xl font-black text-white outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                              >
+                                {section.content.title}
+                              </h3>
+                              <div className="mt-10">
+                                <BeforeAfterSlider
+                                  beforeUrl={section.content.beforeUrl}
+                                  afterUrl={section.content.afterUrl}
+                                  labelBefore={section.content.labelBefore}
+                                  labelAfter={section.content.labelAfter}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'trust' && (
+                          <div className="py-14 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0b1220' }}>
+                            <div className="max-w-5xl mx-auto">
+                              <div className="text-center text-white text-sm font-black uppercase tracking-widest mb-8">
+                                {section.content.title}
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {(section.content.items || []).map((item: string, i: number) => (
+                                  <div key={i} className="rounded-full border border-white/10 bg-white/10 backdrop-blur px-4 py-3 text-xs font-bold text-white text-center">
+                                    {item}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {section.type === 'testimonials' && (
                           <div className={`py-24 px-6 container mx-auto flex flex-col ${section.settings.textAlign === 'left' ? 'items-start text-left' :
                             section.settings.textAlign === 'right' ? 'items-end text-right' :
@@ -1509,6 +1920,25 @@ export default function LiveEditor() {
         </main>
       </div>
 
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className={`rounded-2xl px-5 py-4 shadow-2xl border ${toast.kind === "error" ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+            <div className="text-xs font-black uppercase tracking-widest">
+              {toast.kind === "error" ? "Publish failed" : "Published"}
+            </div>
+            <div className="mt-2 text-sm font-semibold">{toast.message}</div>
+            {toast.href && toast.label && (
+              <Link
+                href={toast.href}
+                className="mt-3 inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-900"
+              >
+                {toast.label}
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* EXPORT / PUBLISH MODAL */}
       {showExport && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-10 backdrop-blur-md">
@@ -1532,9 +1962,12 @@ export default function LiveEditor() {
               <button onClick={() => setShowExport(false)} className="flex-1 py-4 text-sm font-bold text-slate-400 hover:text-slate-600 transition">Cancel</button>
               <button
                 onClick={() => {
-                  saveToLocalStorage();
-                  alert("Successfully Published! Your site is now live at your-store.shoply.com");
-                  setShowExport(false);
+                  publishToCloud()
+                    .then(() => {
+                      setShowExport(false);
+                    })
+                    .catch(() => {
+                    });
                 }}
                 className="flex-[2] py-4 bg-orange-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-orange-200 hover:scale-105 active:scale-95 transition-all"
               >
@@ -1650,6 +2083,106 @@ export default function LiveEditor() {
     </div>
   );
 }
+
+function AnimatedStat({ value }: { value: string }) {
+  const [display, setDisplay] = useState(0);
+  const raw = String(value || "");
+  const target = Number(raw.replace(/[^0-9.]/g, "")) || 0;
+  const suffix = raw.replace(/[0-9.]/g, "");
+
+  useEffect(() => {
+    let frame = 0;
+    const total = 30;
+    const timer = setInterval(() => {
+      frame += 1;
+      const next = Math.round((target * frame) / total);
+      setDisplay(next);
+      if (frame >= total) clearInterval(timer);
+    }, 30);
+    return () => clearInterval(timer);
+  }, [target]);
+
+  return (
+    <div className="text-3xl font-black text-white">
+      {display}{suffix}
+    </div>
+  );
+}
+
+function TestimonialSlider({ items }: { items: Array<{ name: string; role: string; text: string }> }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!items.length) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % items.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [items.length]);
+
+  if (!items.length) return null;
+  const active = items[index];
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/10 backdrop-blur p-8 text-white">
+      <p className="text-lg md:text-2xl font-semibold leading-relaxed">"{active.text}"</p>
+      <div className="mt-6 text-xs uppercase tracking-widest text-slate-200">
+        {active.name} - {active.role}
+      </div>
+      <div className="mt-6 flex items-center justify-center gap-2">
+        {items.map((_, i) => (
+          <span key={i} className={`h-1.5 w-6 rounded-full ${i === index ? "bg-white" : "bg-white/30"}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BeforeAfterSlider({
+  beforeUrl,
+  afterUrl,
+  labelBefore,
+  labelAfter
+}: {
+  beforeUrl: string;
+  afterUrl: string;
+  labelBefore: string;
+  labelAfter: string;
+}) {
+  const [value, setValue] = useState(50);
+  return (
+    <div className="relative rounded-[32px] overflow-hidden border border-white/10 bg-white/5">
+      <div className="aspect-[16/9] relative">
+        {beforeUrl && (
+          <img src={beforeUrl} className="absolute inset-0 w-full h-full object-cover" />
+        )}
+        <div className="absolute inset-0 overflow-hidden" style={{ width: `${value}%` }}>
+          {afterUrl && (
+            <img src={afterUrl} className="w-full h-full object-cover" />
+          )}
+        </div>
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full px-6">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={value}
+              onChange={(e) => setValue(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        </div>
+        <div className="absolute top-4 left-4 text-[10px] uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-full">
+          {labelBefore || "Before"}
+        </div>
+        <div className="absolute top-4 right-4 text-[10px] uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-full">
+          {labelAfter || "After"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 
