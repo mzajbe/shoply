@@ -193,13 +193,4 @@ function LoginPageContent() {
     );
 }
 
-<<<<<<< HEAD
-export default function LoginPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <LoginPageContent />
-        </Suspense>
-    );
-}
-=======
->>>>>>> 6914226b14ac2c34da8eec9d422fc2cb0ebce04b
+export default LoginPageContent;
