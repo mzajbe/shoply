@@ -55,6 +55,7 @@ export async function setupDatabase() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS premium_until TIMESTAMP WITH TIME ZONE');
 
     // Create projects table
     await client.query(`
@@ -151,6 +152,22 @@ export async function setupDatabase() {
         payment_paypal BOOLEAN DEFAULT false,
         shipping_rate VARCHAR(50) DEFAULT '0.00',
         notifications_email BOOLEAN DEFAULT true
+      );
+    `);
+
+    // Track billing transactions for premium memberships
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS billing_transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        mer_txnid VARCHAR(64) UNIQUE NOT NULL,
+        amount VARCHAR(20) NOT NULL,
+        currency VARCHAR(10) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        provider VARCHAR(30) DEFAULT 'aamarpay',
+        pg_txnid VARCHAR(64),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
