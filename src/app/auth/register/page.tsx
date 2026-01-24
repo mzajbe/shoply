@@ -83,7 +83,7 @@ export default function RegisterPage() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black" id="fullName"
                                     />
                                 </div>
 
@@ -99,6 +99,7 @@ export default function RegisterPage() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+                                        id="email"
                                     />
                                 </div>
 
@@ -114,6 +115,8 @@ export default function RegisterPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+
+                                        id="password"
                                     />
                                 </div>
 
@@ -129,6 +132,8 @@ export default function RegisterPage() {
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+
+                                        id="confirmPassword"
                                     />
                                 </div>
 
@@ -137,6 +142,8 @@ export default function RegisterPage() {
                                     type="submit"
                                     disabled={loading}
                                     className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition mt-2 shadow-md"
+
+                                    id="registerBtn"
                                 >
                                     {loading ? 'Creating account...' : 'Create account'}
                                 </button>

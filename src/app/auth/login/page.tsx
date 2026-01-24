@@ -79,6 +79,8 @@ function LoginPageContent() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+
+                                        id="email"
                                     />
                                 </div>
 
@@ -94,6 +96,8 @@ function LoginPageContent() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+
+                                        id="password"
                                     />
                                 </div>
 
@@ -105,6 +109,8 @@ function LoginPageContent() {
                                             checked={rememberMe}
                                             onChange={(e) => setRememberMe(e.target.checked)}
                                             className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500"
+
+                                            id="rememberMe"
                                         />
                                         <span className="text-sm text-gray-700">Remember me</span>
                                     </label>
@@ -121,6 +127,8 @@ function LoginPageContent() {
                                     type="submit"
                                     disabled={loading}
                                     className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition mt-2 shadow-md"
+
+                                    id="loginBtn"
                                 >
                                     {loading ? 'Signing in...' : 'Sign in'}
                                 </button>
