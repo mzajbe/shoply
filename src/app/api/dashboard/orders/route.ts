@@ -45,6 +45,33 @@ export async function POST(request: Request) {
             [orderId, customer, email, total, status, formattedDate, productId, productName, quantity]
         );
 
+        // Upsert customer record + update total spent
+        const parseMoney = (value: string) => {
+            const num = Number(String(value || "").replace(/[^0-9.]/g, ""));
+            return Number.isFinite(num) ? num : 0;
+        };
+        const newSpent = parseMoney(total);
+        const existingCustomer = await client.query(
+            'SELECT id, spent FROM customers WHERE email = $1',
+            [email]
+        );
+
+        if (existingCustomer.rows.length > 0) {
+            const currentSpent = parseMoney(existingCustomer.rows[0].spent);
+            const updatedSpent = `$${(currentSpent + newSpent).toFixed(2)}`;
+            await client.query(
+                'UPDATE customers SET name = $1, spent = $2 WHERE email = $3',
+                [customer, updatedSpent, email]
+            );
+        } else {
+            const customerId = `C${Date.now()}`;
+            const spentValue = `$${newSpent.toFixed(2)}`;
+            await client.query(
+                'INSERT INTO customers (id, name, email, spent, joined) VALUES ($1, $2, $3, $4, $5)',
+                [customerId, customer, email, spentValue, formattedDate]
+            );
+        }
+
         return NextResponse.json({ id: orderId });
     } catch (error) {
         return NextResponse.json({ message: 'Error creating order' }, { status: 500 });
