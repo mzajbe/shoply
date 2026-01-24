@@ -19,34 +19,6 @@ const themes = [
     accent: "bg-rose-500",
     previewImage: "/themes/modern.png",
   },
-  {
-    id: "classic",
-    name: "Classic",
-    desc: "Traditional e-commerce structure with clear navigation and trust-focused blocks.",
-    accent: "bg-emerald-500",
-    previewImage: "/themes/classic.png",
-  },
-  {
-    id: "bold",
-    name: "Bold & Dark",
-    desc: "High energy, dark themes with neon accents for tech and gaming brands.",
-    accent: "bg-yellow-400",
-    previewImage: "/themes/dark.png",
-  },
-  {
-    id: "elegant",
-    name: "Elegant",
-    desc: "Serene colors and serif typography for jewelry, fashion, and luxury goods.",
-    accent: "bg-amber-700",
-    previewImage: "/themes/elegant.png",
-  },
-  {
-    id: "tech",
-    name: "Tech-Forward",
-    desc: "Sleek, futuristic design with grid layouts and glassmorphism elements.",
-    accent: "bg-cyan-500",
-    previewImage: "/themes/tech.png",
-  },
 ];
 
 type StoreSettings = {

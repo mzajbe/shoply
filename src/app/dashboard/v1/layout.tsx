@@ -113,6 +113,7 @@ function Header() {
     const [storeName, setStoreName] = useState<string>("My Store");
     const [loaded, setLoaded] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [notificationsViewed, setNotificationsViewed] = useState(false);
 
     useEffect(() => {
         const loadHeader = async () => {
@@ -182,8 +183,9 @@ function Header() {
     }, [orders]);
 
     const notificationCount = useMemo(() => {
+        if (notificationsViewed) return 0;
         return orders.filter((o) => o.status === "Pending").length;
-    }, [orders]);
+    }, [orders, notificationsViewed]);
 
     return (
         <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200 sticky top-0 z-10">
@@ -212,11 +214,20 @@ function Header() {
                 <div className="relative">
                     <button
                         className="text-slate-600 hover:text-slate-900 relative"
-                        onClick={() => setShowNotifications((v) => !v)}
+                        onClick={() => {
+                            setShowNotifications((v) => {
+                                const next = !v;
+                                if (next) setNotificationsViewed(true);
+                                return next;
+                            });
+                        }}
+                        aria-label="Notifications"
                     >
-                        Notifications
+                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition">
+                            <IconBell />
+                        </span>
                         {notificationCount > 0 && (
-                            <span className="ml-2 inline-flex items-center justify-center text-[10px] font-bold bg-orange-600 text-white rounded-full w-5 h-5">
+                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center text-[10px] font-bold bg-orange-600 text-white rounded-full w-5 h-5">
                                 {notificationCount}
                             </span>
                         )}
@@ -316,6 +327,15 @@ function IconCog() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.27 17.9l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L4.21 4.2A2 2 0 0 1 7 1.37l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09c.06.6.36 1.08 1 1.51h.01c.64.43 1 .91 1.06 1.51V7a1.65 1.65 0 0 0 1 1.51c.66.43 1 .91 1.06 1.51V11a2 2 0 0 1 0 4h-.09c-.6.06-1.08.36-1.51 1z" />
+        </svg>
+    );
+}
+
+function IconBell() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
     );
 }

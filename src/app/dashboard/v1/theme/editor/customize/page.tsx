@@ -18,34 +18,6 @@ const THEMES: Record<string, any> = {
 		font: "Poppins",
 		layout: "center",
 	},
-	classic: {
-		name: "Classic",
-		description: "Traditional e‑commerce layout with clear navigation.",
-		color: "#10b981",
-		font: "Georgia",
-		layout: "boxed",
-	},
-	bold: {
-		name: "Bold & Dark",
-		description: "High energy, dark themes with neon accents for tech and gaming brands.",
-		color: "#1a1a1a",
-		font: "Inter",
-		layout: "spacious",
-	},
-	elegant: {
-		name: "Elegant",
-		description: "Serene colors and serif typography for jewelry, fashion, and luxury goods.",
-		color: "#c2410c",
-		font: "Georgia",
-		layout: "center",
-	},
-	tech: {
-		name: "Tech-Forward",
-		description: "Sleek, futuristic design with grid layouts and glassmorphism elements.",
-		color: "#06b6d4",
-		font: "Inter",
-		layout: "spacious",
-	},
 };
 
 export default function ThemeCustomize() {
@@ -162,5 +134,6 @@ export default function ThemeCustomize() {
 		</div>
 	);
 }
+
 
 

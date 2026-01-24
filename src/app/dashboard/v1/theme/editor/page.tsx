@@ -18,10 +18,6 @@ type Product = {
 const THEMES: Record<string, any> = {
   minimal: { name: "Minimal", color: "#6366f1", font: "Inter", preview: "/themes/minimal.png" },
   modern: { name: "Modern", color: "#fb7185", font: "Poppins", preview: "/themes/modern.png" },
-  classic: { name: "Classic", color: "#10b981", font: "Georgia", preview: "/themes/classic.png" },
-  bold: { name: "Bold & Dark", color: "#1a1a1a", font: "Inter", preview: "/themes/dark.png" },
-  elegant: { name: "Elegant", color: "#c2410c", font: "Georgia", preview: "/themes/elegant.png" },
-  tech: { name: "Tech-Forward", color: "#06b6d4", font: "Inter", preview: "/themes/tech.png" },
 };
 
 const THEME_PRESETS: Record<string, any> = {
@@ -39,38 +35,6 @@ const THEME_PRESETS: Record<string, any> = {
     sections: [
       { id: "mo1", type: "hero", settings: { layout: "center", bgColor: "#fff1f2" }, content: { title: "Bold & Vibrant", subtitle: "Express your brand with high contrast.", bgImage: "" } },
       { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
-    ]
-  },
-  classic: {
-    color: "#10b981",
-    font: "Georgia",
-    sections: [
-      { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
-      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3, source: "all", collection: "" } }
-    ]
-  },
-  bold: {
-    color: "#eab308",
-    font: "Inter",
-    sections: [
-      { id: "bd1", type: "hero", settings: { layout: "spacious", bgColor: "#121212", titleColor: "#ffffff" }, content: { title: "UNLEASH THE POWER", subtitle: "High energy design for high energy brands.", bgImage: "" } },
-      { id: "bd2", type: "cta", settings: { bgColor: "#1a1a1a" }, content: { title: "Join the Dark Side", button: "Get Started Now" } }
-    ]
-  },
-  elegant: {
-    color: "#c2410c",
-    font: "Georgia",
-    sections: [
-      { id: "el1", type: "hero", settings: { layout: "center", bgColor: "#fff7ed" }, content: { title: "Pure Sophistication", subtitle: "The finest selection for the finest taste.", bgImage: "" } },
-      { id: "el2", type: "testimonials", settings: { bgColor: "#ffffff" }, content: { items: [{ name: "Sophia R.", text: "Absolutely stunning template.", role: "CEO" }] } }
-    ]
-  },
-  tech: {
-    color: "#06b6d4",
-    font: "Inter",
-    sections: [
-      { id: "tk1", type: "hero", settings: { layout: "spacious", bgColor: "#0f172a", titleColor: "#22d3ee" }, content: { title: "Future Forward", subtitle: "Building the digital landscape of tomorrow.", bgImage: "" } },
-      { id: "tk2", type: "faq", settings: { bgColor: "#1e293b", titleColor: "#ffffff" }, content: { title: "System Knowledge", items: [{ q: "Uptime?", a: "99.9% guaranteed." }] } }
     ]
   },
 };
