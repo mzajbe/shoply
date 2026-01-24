@@ -102,7 +102,7 @@ export default function MediaLibrary() {
         
         <div className="flex items-center gap-3">
           <Link 
-            href="/ahmed-dashboard/theme/editor" 
+            href="/dashboard/v1/theme/editor" 
             className="px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all shadow-sm"
           >
             🎨 Back to Editor
@@ -191,3 +191,4 @@ export default function MediaLibrary() {
     </div>
   );
 }
+

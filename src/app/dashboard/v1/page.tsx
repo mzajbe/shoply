@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { fetchStats, fetchOrders } from "@/lib/data";
+import { fetchOrders, fetchCustomers, fetchProducts } from "@/lib/data";
 
 type Stat = { label: string; value: string; delta?: string };
 
@@ -14,8 +14,65 @@ type Order = {
 };
 
 export default async function AhmedDashboardPage() {
-  const stats: Stat[] = await fetchStats();
   const recentOrders: Order[] = await fetchOrders();
+  const customers = await fetchCustomers();
+  const products = await fetchProducts();
+
+  const parseMoney = (value: string) => {
+    const num = Number(String(value || "").replace(/[^0-9.]/g, ""));
+    return Number.isFinite(num) ? num : 0;
+  };
+
+  const totalOrders = recentOrders.length;
+  const paidOrders = recentOrders.filter((o) => o.status === "Paid");
+  const refundedOrders = recentOrders.filter((o) => o.status === "Refunded");
+  const totalSales = paidOrders.reduce((sum, o) => sum + parseMoney(o.total), 0);
+  const avgOrder = paidOrders.length ? totalSales / paidOrders.length : 0;
+  const visitors = Array.isArray(customers) ? customers.length : 0;
+
+  const stats: Stat[] = [
+    { label: "Total Sales", value: `$${totalSales.toFixed(2)}` },
+    { label: "Orders", value: `${totalOrders}` },
+    { label: "Avg. Order", value: `$${avgOrder.toFixed(2)}` },
+    { label: "Products", value: `${Array.isArray(products) ? products.length : 0}` },
+  ];
+
+  const conversionRate = totalOrders ? (paidOrders.length / totalOrders) * 100 : 0;
+  const returnRate = totalOrders ? (refundedOrders.length / totalOrders) * 100 : 0;
+
+  const toDate = (value: string) => {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? new Date(parsed) : null;
+  };
+
+  const buildDailySeries = (orders: Order[], days = 14) => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - (days - 1));
+    start.setHours(0, 0, 0, 0);
+
+    const buckets: { date: Date; total: number }[] = [];
+    for (let i = 0; i < days; i += 1) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      buckets.push({ date: d, total: 0 });
+    }
+
+    for (const order of orders) {
+      const d = toDate(order.date);
+      if (!d) continue;
+      const day = new Date(d);
+      day.setHours(0, 0, 0, 0);
+      const index = Math.floor((day.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+      if (index >= 0 && index < buckets.length) {
+        buckets[index].total += parseMoney(order.total);
+      }
+    }
+
+    return buckets;
+  };
+
+  const dailySeries = buildDailySeries(paidOrders, 14);
 
   return (
     <div className="p-8">
@@ -32,12 +89,14 @@ export default async function AhmedDashboardPage() {
             <div className="text-sm text-slate-500">Last 30 days</div>
           </div>
 
-          <div className="h-60 flex items-center justify-center text-slate-400">[Chart placeholder]</div>
+          <div className="h-60">
+            <OverviewChart data={dailySeries} />
+          </div>
 
           <div className="mt-6 grid grid-cols-3 gap-4">
-            <SmallStat label="Conversion" value="2.4%" />
-            <SmallStat label="Return rate" value="0.6%" />
-            <SmallStat label="Avg. cart" value="$58.10" />
+            <SmallStat label="Conversion" value={`${conversionRate.toFixed(1)}%`} />
+            <SmallStat label="Return rate" value={`${returnRate.toFixed(1)}%`} />
+            <SmallStat label="Avg. cart" value={`$${avgOrder.toFixed(2)}`} />
           </div>
         </div>
 
@@ -72,7 +131,7 @@ export default async function AhmedDashboardPage() {
       <section className="mt-6 bg-white rounded-lg shadow border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Recent orders</h3>
-          <Link href="/ahmed-dashboard/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
+          <Link href="/dashboard/v1/orders" className="text-sm text-orange-600 hover:underline">View all</Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -136,5 +195,71 @@ function StatusPill({ status }: { status: Order["status"] }) {
   const cls = status === "Paid" ? "bg-green-100 text-green-800" : status === "Pending" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800";
   return <span className={`${cls} inline-flex items-center rounded-full px-3 py-1 text-xs font-medium`}>{status}</span>;
 }
+
+function OverviewChart({ data }: { data: { date: Date; total: number }[] }) {
+  const width = 640;
+  const height = 220;
+  const padding = 24;
+  const maxValue = Math.max(1, ...data.map((d) => d.total));
+
+  const points = data.map((d, i) => {
+    const x = padding + (i / (data.length - 1)) * (width - padding * 2);
+    const y = height - padding - (d.total / maxValue) * (height - padding * 2);
+    return `${x},${y}`;
+  });
+
+  const gradientId = "overview-gradient";
+  const path = `M ${points[0]} ` + points.slice(1).map((p) => `L ${p}`).join(" ");
+
+  const areaPath =
+    `${path} L ${width - padding},${height - padding} L ${padding},${height - padding} Z`;
+
+  const formatDay = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return (
+    <div className="w-full h-full">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+        <defs>
+          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#fb923c" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#fb923c" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <rect x="0" y="0" width={width} height={height} rx="16" fill="#ffffff" />
+
+        {[0.25, 0.5, 0.75, 1].map((p) => {
+          const y = height - padding - p * (height - padding * 2);
+          return <line key={p} x1={padding} x2={width - padding} y1={y} y2={y} stroke="#f1f5f9" strokeWidth="1" />;
+        })}
+
+        <path d={areaPath} fill={`url(#${gradientId})`} />
+        <path d={path} fill="none" stroke="#fb923c" strokeWidth="3" strokeLinecap="round" />
+
+        {data.map((d, i) => {
+          const x = padding + (i / (data.length - 1)) * (width - padding * 2);
+          const y = height - padding - (d.total / maxValue) * (height - padding * 2);
+          return (
+            <g key={i}>
+              <circle cx={x} cy={y} r="4" fill="#fb923c" />
+            </g>
+          );
+        })}
+
+        {data.filter((_, i) => i % 3 === 0 || i === data.length - 1).map((d, i) => {
+          const index = data.findIndex((v) => v === d);
+          const x = padding + (index / (data.length - 1)) * (width - padding * 2);
+          return (
+            <text key={i} x={x} y={height - 6} textAnchor="middle" fontSize="10" fill="#94a3b8">
+              {formatDay(d.date)}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 
 

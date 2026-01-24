@@ -1,19 +1,36 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import allProducts from "../../products/product";
 
-type SectionType = "navbar" | "hero" | "features" | "products" | "faq" | "testimonials" | "cta";
+type SectionType =
+  | "navbar"
+  | "hero"
+  | "heroVideo"
+  | "split"
+  | "stats"
+  | "products"
+  | "features"
+  | "faq"
+  | "testimonials"
+  | "testimonialsSlider"
+  | "beforeAfter"
+  | "trust"
+  | "cta";
+
+type Product = {
+  id: string;
+  name: string;
+  price?: string;
+  imageUrl?: string | null;
+  category?: string | null;
+  status?: string | null;
+};
 
 const THEMES: Record<string, any> = {
   minimal: { name: "Minimal", color: "#6366f1", font: "Inter", preview: "/themes/minimal.png" },
   modern: { name: "Modern", color: "#fb7185", font: "Poppins", preview: "/themes/modern.png" },
-  classic: { name: "Classic", color: "#10b981", font: "Georgia", preview: "/themes/classic.png" },
-  bold: { name: "Bold & Dark", color: "#1a1a1a", font: "Inter", preview: "/themes/dark.png" },
-  elegant: { name: "Elegant", color: "#c2410c", font: "Georgia", preview: "/themes/elegant.png" },
-  tech: { name: "Tech-Forward", color: "#06b6d4", font: "Inter", preview: "/themes/tech.png" },
 };
 
 const THEME_PRESETS: Record<string, any> = {
@@ -22,50 +39,98 @@ const THEME_PRESETS: Record<string, any> = {
     font: "Inter",
     sections: [
       { id: "m1", type: "hero", settings: { layout: "spacious", bgColor: "#ffffff" }, content: { title: "Refined Simplicity", subtitle: "Minimalist design for modern brands.", bgImage: "" } },
-      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3 } }
+      { id: "m2", type: "products", settings: { bgColor: "#f8fafc" }, content: { title: "Essential Collection", count: 3, source: "all", collection: "" } }
     ]
   },
   modern: {
     color: "#fb7185",
     font: "Poppins",
+    mood: "bold",
     sections: [
-      { id: "mo1", type: "hero", settings: { layout: "center", bgColor: "#fff1f2" }, content: { title: "Bold & Vibrant", subtitle: "Express your brand with high contrast.", bgImage: "" } },
-      { id: "mo2", type: "features", settings: { bgColor: "#ffffff" }, content: { title: "Innovative Features", items: [{ t: "Next-Gen", d: "Leading the market." }, { t: "Unmatched", d: "Quality first." }] } }
-    ]
-  },
-  classic: {
-    color: "#10b981",
-    font: "Georgia",
-    sections: [
-      { id: "cl1", type: "hero", settings: { layout: "boxed", bgColor: "#ffffff" }, content: { title: "The Standard of Excellence", subtitle: "Traditional values meets modern tech.", bgImage: "" } },
-      { id: "cl2", type: "products", settings: { bgColor: "#ffffff" }, content: { title: "Our Best Sellers", count: 3 } }
-    ]
-  },
-  bold: {
-    color: "#eab308",
-    font: "Inter",
-    sections: [
-      { id: "bd1", type: "hero", settings: { layout: "spacious", bgColor: "#121212", titleColor: "#ffffff" }, content: { title: "UNLEASH THE POWER", subtitle: "High energy design for high energy brands.", bgImage: "" } },
-      { id: "bd2", type: "cta", settings: { bgColor: "#1a1a1a" }, content: { title: "Join the Dark Side", button: "Get Started Now" } }
-    ]
-  },
-  elegant: {
-    color: "#c2410c",
-    font: "Georgia",
-    sections: [
-      { id: "el1", type: "hero", settings: { layout: "center", bgColor: "#fff7ed" }, content: { title: "Pure Sophistication", subtitle: "The finest selection for the finest taste.", bgImage: "" } },
-      { id: "el2", type: "testimonials", settings: { bgColor: "#ffffff" }, content: { items: [{ name: "Sophia R.", text: "Absolutely stunning template.", role: "CEO" }] } }
-    ]
-  },
-  tech: {
-    color: "#06b6d4",
-    font: "Inter",
-    sections: [
-      { id: "tk1", type: "hero", settings: { layout: "spacious", bgColor: "#0f172a", titleColor: "#22d3ee" }, content: { title: "Future Forward", subtitle: "Building the digital landscape of tomorrow.", bgImage: "" } },
-      { id: "tk2", type: "faq", settings: { bgColor: "#1e293b", titleColor: "#ffffff" }, content: { title: "System Knowledge", items: [{ q: "Uptime?", a: "99.9% guaranteed." }] } }
+      {
+        id: "mv1",
+        type: "heroVideo",
+        settings: { layout: "center", bgColor: "#0f172a", titleColor: "#ffffff", subtitleColor: "#e2e8f0" },
+        content: {
+          title: "Modern. Premium. Magnetic.",
+          subtitle: "Bold visual language with cinematic motion and premium polish.",
+          videoUrl: "",
+          marqueeText: "Premium look   |   Modern theme   |   High conversion   |   Built for growth"
+        }
+      },
+      {
+        id: "mv2",
+        type: "split",
+        settings: { layout: "spacious", bgColor: "#0f172a" },
+        content: {
+          title: "Split layouts with glassmorphism.",
+          subtitle: "Layered gradients, depth, and bold typography to spotlight your hero products.",
+          imageUrl: "/themes/modern.png",
+          bullets: ["Glass cards", "Layered gradients", "Responsive layout"]
+        }
+      },
+      {
+        id: "mv3",
+        type: "stats",
+        settings: { bgColor: "#111827" },
+        content: {
+          title: "Numbers that move",
+          items: [{ label: "Conversion", value: "32%" }, { label: "AOV", value: "1990" }, { label: "Repeat", value: "41%" }]
+        }
+      },
+      {
+        id: "mv4",
+        type: "products",
+        settings: { bgColor: "#0b1220" },
+        content: { title: "Featured drops", count: 4, source: "all", collection: "", quickView: true, featuredCount: 2 }
+      },
+      {
+        id: "mv5",
+        type: "testimonialsSlider",
+        settings: { bgColor: "#0b1220" },
+        content: {
+          items: [
+            { name: "Ava Chen", role: "Founder", text: "The Modern theme feels like a luxury brand site." },
+            { name: "Leo Park", role: "Marketing Lead", text: "We saw higher engagement after switching." },
+            { name: "Mira Khan", role: "Owner", text: "Fast, beautiful, and easy to customize." }
+          ]
+        }
+      },
+      {
+        id: "mv6",
+        type: "beforeAfter",
+        settings: { bgColor: "#0f172a" },
+        content: {
+          title: "Before vs After",
+          beforeUrl: "/themes/minimal.png",
+          afterUrl: "/themes/modern.png",
+          labelBefore: "Before",
+          labelAfter: "After"
+        }
+      },
+      {
+        id: "mv7",
+        type: "trust",
+        settings: { bgColor: "#0b1220" },
+        content: { title: "Trusted by founders", items: ["Secure checkout", "Fast delivery", "Premium support", "30-day returns"] }
+      },
+      {
+        id: "mv8",
+        type: "cta",
+        settings: { bgColor: "#111827" },
+        content: { title: "Ready to launch a premium storefront?", button: "Get Started" }
+      }
     ]
   },
 };
+
+const PREMIUM_THEME_IDS = new Set(["modern"]);
+const MODERN_COLOR_PRESETS = [
+  { name: "Aurora", color: "#7c3aed", mood: "bold" },
+  { name: "Coral", color: "#fb7185", mood: "bold" },
+  { name: "Ocean", color: "#22d3ee", mood: "soft" },
+  { name: "Sage", color: "#34d399", mood: "soft" }
+];
 
 interface Section {
   id: string;
@@ -88,6 +153,7 @@ function LiveEditorContent() {
   // --- STATE MANAGEMENT ---
   const [globalColor, setGlobalColor] = useState("#6366f1");
   const [globalFont, setGlobalFont] = useState("Inter");
+  const [themeMood, setThemeMood] = useState<"bold" | "soft">("bold");
   const [pageSections, setPageSections] = useState<Record<string, Section[]>>({ "Home": [] });
   const [activePage, setActivePage] = useState("Home");
   const [activeTab, setActiveTab] = useState<"edit" | "pages" | "theme">("edit");
@@ -95,9 +161,31 @@ function LiveEditorContent() {
   const [saveStatus, setSaveStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [storeName, setStoreName] = useState("");
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [billingError, setBillingError] = useState("");
+  const [toast, setToast] = useState<{ message: string; kind?: "success" | "error"; href?: string; label?: string } | null>(null);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
 
   // Computed: current page sections
   const sections = pageSections[activePage] || [];
+  const hasNavbar = sections.some((section) => section.type === "navbar");
+  const pageLinks = Object.keys(pageSections);
+  const baseSectionTypes: SectionType[] = ["navbar", "hero", "products", "features", "faq", "testimonials", "cta"];
+  const premiumSectionTypes: SectionType[] = ["heroVideo", "split", "stats", "testimonialsSlider", "beforeAfter", "trust"];
+  const sectionTypesForUI = [...baseSectionTypes, ...premiumSectionTypes];
+  const activeThemeId = search.get("id") || "default";
+  const isModernTheme = activeThemeId === "modern";
+  const previewThemeClass = isModernTheme
+    ? themeMood === "soft"
+      ? "bg-white text-slate-900"
+      : "bg-slate-950 text-white"
+    : "bg-white text-slate-900";
 
   // --- MEDIA MODAL STATE ---
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -124,6 +212,25 @@ function LiveEditorContent() {
     const isNew = search.get("new") === "true";
 
     async function loadInitialData() {
+      let currentIsPremium = false;
+      try {
+        const billingRes = await fetch("/api/billing/status", { cache: "no-store" });
+        const billingData = await billingRes.json();
+        currentIsPremium = !!billingData?.isPremium;
+      } catch {
+        currentIsPremium = false;
+      } finally {
+        setIsPremium(currentIsPremium);
+      }
+
+      const requestedThemeId = urlThemeId || "minimal";
+      const isPremiumTheme = PREMIUM_THEME_IDS.has(requestedThemeId);
+      const canUseRequestedTheme = !isPremiumTheme || currentIsPremium;
+      const effectiveThemeId = canUseRequestedTheme ? requestedThemeId : "minimal";
+      if (isPremiumTheme && !currentIsPremium) {
+        setShowUpgrade(true);
+      }
+
       let loadedFromCloud = false;
 
       // 1. TRY CLOUD FIRST
@@ -132,15 +239,21 @@ function LiveEditorContent() {
         const data = await res.json();
         if (data.config) {
           const config = data.config;
+          if (config.themeId && PREMIUM_THEME_IDS.has(config.themeId) && !currentIsPremium) {
+            setShowUpgrade(true);
+            loadedFromCloud = false;
+          } else {
           // If it's a new theme selection from library, we might want to prioritize the preset
           // but only if the user explicitly clicked "new" and it's a DIFFERENT theme.
           if (!(isNew && urlThemeId && config.themeId !== urlThemeId)) {
             setPageSections(config.pageSections || { "Home": [] });
             setGlobalColor(config.globalColor || "#6366f1");
             setGlobalFont(config.globalFont || "Inter");
+            setThemeMood(config.themeMood || "bold");
             if (config.activePage) setActivePage(config.activePage);
             loadedFromCloud = true;
             console.log("Loaded from Cloud Project");
+          }
           }
         }
       } catch (e) { console.error("Cloud fetch failed", e); }
@@ -160,6 +273,7 @@ function LiveEditorContent() {
             if (parsed.pageSections) setPageSections(parsed.pageSections);
             setGlobalColor(parsed.globalColor || "#6366f1");
             setGlobalFont(parsed.globalFont || "Inter");
+            setThemeMood(parsed.themeMood || "bold");
             if (parsed.activePage) setActivePage(parsed.activePage);
             loadedFromDraft = true;
           }
@@ -168,10 +282,11 @@ function LiveEditorContent() {
 
       // 3. FALLBACK TO PRESETS
       if (!loadedFromDraft) {
-        if (urlThemeId && THEME_PRESETS[urlThemeId]) {
-          const preset = THEME_PRESETS[urlThemeId];
+        if (effectiveThemeId && THEME_PRESETS[effectiveThemeId]) {
+          const preset = THEME_PRESETS[effectiveThemeId];
           setGlobalColor(search.get("color") || preset.color);
           setGlobalFont(search.get("font") || preset.font);
+          setThemeMood(preset.mood || "bold");
           setPageSections({ "Home": preset.sections });
         } else {
           setPageSections({ "Home": [{ id: "hero-1", type: "hero", settings: { layout: "spacious" }, content: { title: "Your Brand, Your Way", subtitle: "Build your dream store.", bgImage: "", bgSize: "cover", bgPos: "center" } }] });
@@ -194,9 +309,10 @@ function LiveEditorContent() {
 
   // AUTO-SYNC Preview Data (Instant for live preview tab)
   useEffect(() => {
-    const previewData = { globalColor, globalFont, sections: pageSections[activePage], activePage, pageSections };
+    const urlThemeId = search.get("id") || "default";
+    const previewData = { themeId: urlThemeId, globalColor, globalFont, themeMood, sections: pageSections[activePage], activePage, pageSections };
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
-  }, [globalColor, globalFont, pageSections, activePage]);
+  }, [globalColor, globalFont, themeMood, pageSections, activePage, search]);
 
   // DEBOUNCED AUTO-SAVE Project Draft (Every 1.5s after last change)
   useEffect(() => {
@@ -207,6 +323,7 @@ function LiveEditorContent() {
         themeId: urlThemeId || "default",
         globalColor,
         globalFont,
+        themeMood,
         pageSections,
         activePage
       };
@@ -232,7 +349,7 @@ function LiveEditorContent() {
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [globalColor, globalFont, pageSections, activePage, search]);
+  }, [globalColor, globalFont, themeMood, pageSections, activePage, search]);
 
   const saveToLocalStorage = () => {
     const urlThemeId = search.get("id");
@@ -240,6 +357,7 @@ function LiveEditorContent() {
       themeId: urlThemeId || "default",
       globalColor,
       globalFont,
+      themeMood,
       pageSections,
       activePage
     };
@@ -248,23 +366,161 @@ function LiveEditorContent() {
     setTimeout(() => setSaveStatus(""), 2000);
   };
 
+  const publishToCloud = async () => {
+    const urlThemeId = search.get("id");
+    const projectData = {
+      themeId: urlThemeId || "default",
+      globalColor,
+      globalFont,
+      themeMood,
+      pageSections,
+      activePage
+    };
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/themes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: projectData })
+      });
+      if (!res.ok) {
+        throw new Error("Publish failed");
+      }
+      setSaveStatus("Published");
+      setTimeout(() => setSaveStatus(""), 2000);
+      if (storeSlug) {
+        setPublishedUrl(storePath);
+      }
+      setToast({
+        message: storeSlug ? `Published! Live at ${publicUrl}` : "Published! Add a store name to get a public URL.",
+        kind: "success",
+        href: storeSlug ? storePath : undefined,
+        label: storeSlug ? "Open Store" : undefined
+      });
+      setTimeout(() => setToast(null), 4000);
+    } catch (error) {
+      console.error("Publish error:", error);
+      setSaveStatus("Publish failed");
+      setTimeout(() => setSaveStatus(""), 2500);
+      setToast({ message: "Publish failed. Please try again.", kind: "error" });
+      setTimeout(() => setToast(null), 4000);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch("/api/dashboard/settings");
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = await res.json();
+        setStoreName(data.store_name || "");
+      } catch (error) {
+        setStoreName("");
+      } finally {
+        setSettingsLoaded(true);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await fetch("/api/dashboard/products", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load products");
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        setProducts([]);
+      } finally {
+        setProductsLoaded(true);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  const normalizedProducts = useMemo<Product[]>(() => {
+    return (products || []).map((p: any) => ({
+      id: String(p.id ?? ""),
+      name: p.name ?? "Untitled",
+      price: p.price ?? "",
+      imageUrl: p.imageUrl ?? p.image_url ?? null,
+      category: p.category ?? "Uncategorized",
+      status: p.status ?? null,
+    }));
+  }, [products]);
+
+  const liveProducts = useMemo(() => {
+    return normalizedProducts.filter((p) => !p.status || p.status === "Active");
+  }, [normalizedProducts]);
+
+  const productCollections = useMemo(() => {
+    const set = new Set<string>();
+    liveProducts.forEach((p) => {
+      if (p.category) set.add(p.category);
+    });
+    return Array.from(set).sort();
+  }, [liveProducts]);
+
+  const storeSlug = useMemo(() => {
+    return storeName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }, [storeName]);
+  const storePath = storeSlug ? `/${storeSlug}.store` : "";
+  const publicUrl = storeSlug ? `${storeSlug}.store` : "";
+
   // NEW: Handle Preview
   const handlePreview = () => {
-    const previewData = { globalColor, globalFont, sections };
+    const urlThemeId = search.get("id") || "default";
+    const previewData = { themeId: urlThemeId, globalColor, globalFont, themeMood, sections };
     // Save the current state so the preview page can read it
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
-    // FIXED: Point to the new absolute path to avoid 404
-    window.open("/your-store-name", "_blank");
+    if (!settingsLoaded || !storeSlug) {
+      window.open("/dashboard/v1/settings", "_blank");
+      return;
+    }
+
+    window.open(storePath, "_blank");
+  };
+
+  const startPremiumCheckout = async () => {
+    setBillingError("");
+    setProcessingPayment(true);
+    try {
+      const res = await fetch("/api/billing/aamarpay/create", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data?.paymentUrl) {
+        throw new Error(data?.message || "Payment initiation failed");
+      }
+      window.location.href = data.paymentUrl;
+    } catch (error: any) {
+      setBillingError(error?.message || "Unable to start checkout");
+      setProcessingPayment(false);
+    }
   };
 
   // --- THEME & PAGE LOGIC ---
   const applyTheme = (themeId: string, fullReset = false) => {
+    if (PREMIUM_THEME_IDS.has(themeId) && !isPremium) {
+      setShowUpgrade(true);
+      return;
+    }
     const theme = THEMES[themeId];
     const preset = THEME_PRESETS[themeId];
     if (theme) {
       setGlobalColor(theme.color);
       setGlobalFont(theme.font);
+      if (preset?.mood) {
+        setThemeMood(preset.mood);
+      }
 
       if (fullReset && preset) {
         if (confirm("Reset current page content to template defaults?")) {
@@ -448,10 +704,35 @@ function LiveEditorContent() {
         };
       }
       case 'hero': return { title: "New Hero Section", subtitle: "Edit text directly.", bgImage: "", bgSize: "cover", bgPos: "center" };
-      case 'products': return { title: "Featured Products", count: 3, customImages: [] };
+      case 'heroVideo':
+        return {
+          title: "Premium hero video",
+          subtitle: "High-impact motion for modern brands.",
+          videoUrl: "",
+          marqueeText: "Premium look   |   Modern theme   |   Built to convert"
+        };
+      case 'split':
+        return {
+          title: "Split spotlight",
+          subtitle: "Showcase product details with glassmorphism.",
+          imageUrl: "/themes/modern.png",
+          bullets: ["Layered gradients", "Glass cards", "Bold typography"]
+        };
+      case 'stats':
+        return {
+          title: "Animated stats",
+          items: [{ label: "Conversion", value: "32%" }, { label: "AOV", value: "1990" }, { label: "Repeat", value: "41%" }]
+        };
+      case 'products': return { title: "Featured Products", count: 3, source: "all", collection: "", customImages: [], quickView: false, featuredCount: 0 };
       case 'features': return { title: "Why Us", items: [{ t: "Fast Shipping", d: "Delivery in 2 days" }, { t: "24/7 Support", d: "Always here" }] };
       case 'faq': return { title: "FAQ", items: [{ q: "Shipping?", a: "Worldwide!" }] };
       case 'testimonials': return { items: [{ name: "Alex S.", text: "Best store ever!", role: "Buyer" }] };
+      case 'testimonialsSlider':
+        return { items: [{ name: "Ava C.", text: "Premium look, simple setup.", role: "Founder" }, { name: "Noah K.", text: "Customers love it.", role: "Owner" }] };
+      case 'beforeAfter':
+        return { title: "Before vs After", beforeUrl: "/themes/minimal.png", afterUrl: "/themes/modern.png", labelBefore: "Before", labelAfter: "After" };
+      case 'trust':
+        return { title: "Trusted by founders", items: ["Secure checkout", "Fast delivery", "Premium support"] };
       case 'cta': return { title: "Ready to start?", button: "Get Started" };
       default: return { title: "New Section" };
     }
@@ -478,7 +759,7 @@ function LiveEditorContent() {
       {/* HEADER TOOLBAR */}
       <header className="h-16 bg-white border-b px-6 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/ahmed-dashboard/theme" className="text-slate-400 hover:text-slate-600 transition">←</Link>
+          <Link href="/dashboard/v1/theme" className="text-slate-400 hover:text-slate-600 transition">←</Link>
           <span className="font-bold text-xl text-orange-600">Shoply Builder</span>
         </div>
         <div className="flex items-center gap-3">
@@ -496,6 +777,16 @@ function LiveEditorContent() {
           >
             Preview Site
           </button>
+          {publishedUrl && (
+            <a
+              href={publishedUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="px-4 py-2 border border-emerald-600 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition"
+            >
+              View Live
+            </a>
+          )}
           <button onClick={saveToLocalStorage} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
             {saveStatus === "Saved!" ? "✓ Saved" : "💾 Save Draft"}
           </button>
@@ -559,24 +850,34 @@ function LiveEditorContent() {
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Add New Block</h4>
                     <div className="grid grid-cols-3 gap-2">
-                      {(['navbar', 'hero', 'products', 'features', 'faq', 'testimonials', 'cta'] as SectionType[]).map(type => (
-                        <button
-                          key={type}
-                          onClick={() => addSection(type)}
-                          className="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-100 hover:border-orange-500 hover:bg-orange-50 transition-all gap-1 saturate-[0.8] hover:saturate-100"
-                        >
-                          <span className="text-lg">
-                            {type === 'navbar' && '=='}
-                            {type === 'hero' && '🖼️'}
-                            {type === 'products' && '🛍️'}
-                            {type === 'features' && '✨'}
-                            {type === 'faq' && '❓'}
-                            {type === 'testimonials' && '💬'}
-                            {type === 'cta' && '⚡'}
-                          </span>
-                          <span className="text-[9px] font-bold capitalize">{type}</span>
-                        </button>
-                      ))}
+                      {sectionTypesForUI.map((type) => {
+                        const locked = premiumSectionTypes.includes(type) && !isPremium;
+                        return (
+                          <button
+                            key={type}
+                            onClick={() => (locked ? setShowUpgrade(true) : addSection(type))}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all gap-1 saturate-[0.8] hover:saturate-100 ${locked ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-100 hover:border-orange-500 hover:bg-orange-50"}`}
+                            title={locked ? "Premium block - upgrade required" : "Add block"}
+                          >
+                            <span className="text-[10px] font-bold">
+                              {type === "navbar" && "NAV"}
+                              {type === "hero" && "HERO"}
+                              {type === "heroVideo" && "VIDEO"}
+                              {type === "split" && "SPLIT"}
+                              {type === "stats" && "STATS"}
+                              {type === "products" && "PROD"}
+                              {type === "features" && "FEAT"}
+                              {type === "faq" && "FAQ"}
+                              {type === "testimonials" && "TEST"}
+                              {type === "testimonialsSlider" && "SLIDE"}
+                              {type === "beforeAfter" && "B/A"}
+                              {type === "trust" && "TRUST"}
+                              {type === "cta" && "CTA"}
+                            </span>
+                            <span className="text-[9px] font-bold capitalize">{type}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </section>
@@ -705,6 +1006,60 @@ function LiveEditorContent() {
                           </div>
                         </>
                       )}
+
+                      {/* PRODUCTS SPECIFIC */}
+                      {activeSection.type === 'products' && (() => {
+                        const sourceValue = activeSection.content.source || "all";
+                        return (
+                          <div className="space-y-3">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Show</label>
+                              <select
+                                value={sourceValue}
+                                onChange={(e) => handleContentChange('source', e.target.value)}
+                                className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                              >
+                                <option value="all">All Products</option>
+                                <option value="collection">Collection (Category)</option>
+                              </select>
+                            </div>
+
+                            {sourceValue === "collection" && (
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Collection</label>
+                                <select
+                                  value={activeSection.content.collection || ""}
+                                  onChange={(e) => handleContentChange('collection', e.target.value)}
+                                  className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                                >
+                                  <option value="">Select category</option>
+                                  {productCollections.map((cat) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                  ))}
+                                </select>
+                                {!productsLoaded && (
+                                  <div className="text-[10px] text-slate-400">Loading categories...</div>
+                                )}
+                                {productsLoaded && productCollections.length === 0 && (
+                                  <div className="text-[10px] text-slate-400">No categories found.</div>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Products Count</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={12}
+                                value={activeSection.content.count ?? 3}
+                                onChange={(e) => handleContentChange('count', Math.max(1, Number(e.target.value) || 1))}
+                                className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 outline-none font-medium"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* CTA/Button SPECIFIC */}
                       {activeSection.content.button !== undefined && (
@@ -890,23 +1245,32 @@ function LiveEditorContent() {
                 <div>
                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Template Switching</h3>
                   <div className="grid grid-cols-2 gap-3 mb-10">
-                    {Object.entries(THEMES).map(([tid, tdata]: [string, any]) => (
-                      <button
-                        key={tid}
-                        onClick={() => applyTheme(tid)}
-                        onDoubleClick={() => applyTheme(tid, true)}
-                        className={`group relative p-2 rounded-2xl border-2 transition-all overflow-hidden ${globalColor === tdata.color ? 'border-orange-500 bg-orange-50' : 'border-slate-100 hover:border-slate-300'}`}
-                        title="Click to apply colors, Double-click to reset content"
-                      >
-                        <img src={tdata.preview} className="w-full aspect-[4/3] object-cover rounded-xl mb-2 grayscale-[0.5] group-hover:grayscale-0 transition-all" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 block text-center pb-1">{tdata.name}</span>
-                        {globalColor === tdata.color && (
-                          <div className="absolute top-2 right-2 bg-orange-500 text-white p-1 rounded-full shadow-lg">
-                            <span className="text-[8px]">✓</span>
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                    {Object.entries(THEMES).map(([tid, tdata]: [string, any]) => {
+                      const locked = PREMIUM_THEME_IDS.has(tid) && !isPremium;
+                      return (
+                        <button
+                          key={tid}
+                          onClick={() => (locked ? setShowUpgrade(true) : applyTheme(tid))}
+                          onDoubleClick={() => (!locked ? applyTheme(tid, true) : null)}
+                          className={`group relative p-2 rounded-2xl border-2 transition-all overflow-hidden ${globalColor === tdata.color ? 'border-orange-500 bg-orange-50' : 'border-slate-100 hover:border-slate-300'} ${locked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          title={locked ? "Premium theme - upgrade required" : "Click to apply colors, Double-click to reset content"}
+                        >
+                          {PREMIUM_THEME_IDS.has(tid) && (
+                            <div className="absolute top-2 left-2 bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full">
+                              Premium
+                            </div>
+                          )}
+                          <img src={tdata.preview} className="w-full aspect-[4/3] object-cover rounded-xl mb-2 grayscale-[0.5] group-hover:grayscale-0 transition-all" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 block text-center pb-1">{tdata.name}</span>
+                          {globalColor === tdata.color && (
+                            <div className="absolute top-2 right-2 bg-orange-500 text-white p-1 rounded-full shadow-lg">
+                              <span className="text-[8px]">✓</span>
+                            </div>
+                          )}
+                          {locked && <div className="absolute inset-0 bg-slate-900/20" />}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Design Overrides</h3>
@@ -943,6 +1307,48 @@ function LiveEditorContent() {
                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest px-1">Changes the font for the entire storefront</p>
                       </div>
                     </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Modern Mood</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => (isPremium ? setThemeMood("bold") : setShowUpgrade(true))}
+                          className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border ${themeMood === "bold" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
+                        >
+                          Bold
+                        </button>
+                        <button
+                          onClick={() => (isPremium ? setThemeMood("soft") : setShowUpgrade(true))}
+                          className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border ${themeMood === "soft" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
+                        >
+                          Soft
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest px-1">Premium mood presets for modern theme</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Color Presets</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {MODERN_COLOR_PRESETS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            onClick={() => {
+                              if (!isPremium) {
+                                setShowUpgrade(true);
+                                return;
+                              }
+                              setGlobalColor(preset.color);
+                              setThemeMood(preset.mood === "soft" ? "soft" : "bold");
+                            }}
+                            className="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition"
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{preset.name}</span>
+                            <span className="w-4 h-4 rounded-full border border-slate-200" style={{ backgroundColor: preset.color }} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -968,7 +1374,7 @@ function LiveEditorContent() {
         <main id="top" className="flex-1 overflow-y-auto bg-slate-100/50 p-4 md:p-12 scroll-smooth">
           {/* Device Mockup Wrapper */}
           <div className="max-w-5xl mx-auto">
-            <div className="bg-white shadow-2xl rounded-[32px] overflow-hidden border border-slate-200 min-h-screen relative" style={{ fontFamily: globalFont }}>
+            <div className={`${previewThemeClass} shadow-2xl rounded-[32px] overflow-hidden border border-slate-200 min-h-screen relative`} style={{ fontFamily: globalFont }}>
 
               {/* Fake Browser Toolbar */}
               <div className="h-10 bg-slate-50 border-b flex items-center px-4 gap-2">
@@ -992,7 +1398,35 @@ function LiveEditorContent() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {sections.map((section, index) => (
+              {!hasNavbar && (
+                <div className="sticky top-0 z-30 border-b border-slate-200/60 backdrop-blur bg-white">
+                  <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                      <div className="font-black text-lg">{storeName || "Brand"}</div>
+                      <nav className="hidden md:flex items-center gap-6 text-[11px] font-black uppercase tracking-widest">
+                        {pageLinks.map((name) => (
+                          <button
+                            key={name}
+                            onClick={() => switchPage(name)}
+                            className={`hover:text-slate-900 transition ${activePage === name ? "text-slate-900" : "text-slate-500"}`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
+                    <button
+                      onClick={() => switchPage(activePage)}
+                      className="px-4 py-2 rounded-full text-xs font-black text-white shadow-sm hover:shadow-md transition"
+                      style={{ backgroundColor: globalColor }}
+                    >
+                      Shop Now
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {sections.map((section, index) => (
                     <div
                       key={section.id}
                       id={`section-${section.id}`}
@@ -1077,6 +1511,52 @@ function LiveEditorContent() {
                           </div>
                         )}
 
+                        {section.type === 'heroVideo' && (
+                          <div className={`py-24 px-6 md:px-16 relative overflow-hidden ${section.settings.textAlign === 'left' ? 'text-left' :
+                            section.settings.textAlign === 'right' ? 'text-right' :
+                              'text-center'}`}
+                            style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="absolute inset-0 opacity-40 pointer-events-none">
+                              <div className="absolute -top-24 -right-24 w-72 h-72 bg-pink-500/40 blur-3xl rounded-full" />
+                              <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-cyan-400/40 blur-3xl rounded-full" />
+                            </div>
+                            <div className="relative max-w-4xl mx-auto">
+                              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-pink-300 mb-6">Premium Hero</div>
+                              <h1
+                                className="text-4xl md:text-6xl font-black leading-tight outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                                style={{ color: section.settings.titleColor || '#ffffff' }}
+                              >
+                                {section.content.title}
+                              </h1>
+                              <p
+                                className="mt-6 text-lg md:text-xl text-slate-200 outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { subtitle: e.currentTarget.innerText })}
+                                style={{ color: section.settings.subtitleColor || '#e2e8f0' }}
+                              >
+                                {section.content.subtitle}
+                              </p>
+                              <div className="mt-10 inline-flex items-center gap-3">
+                                <button className="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-lg" style={{ backgroundColor: globalColor, color: '#0f172a' }}>
+                                  Shop now
+                                </button>
+                                <button className="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest border border-white/30 text-white">
+                                  Watch preview
+                                </button>
+                              </div>
+                            </div>
+                            <div className="mt-12 overflow-hidden border-t border-white/10">
+                              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300 py-4 animate-pulse">
+                                {section.content.marqueeText || "Premium look   |   Modern theme   |   Built to convert"}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {section.type === 'hero' && (
                           <div className={`py-24 md:py-36 px-6 md:px-20 text-white relative overflow-hidden flex flex-col justify-center ${section.settings.textAlign === 'left' ? 'items-start text-left' :
                             section.settings.textAlign === 'right' ? 'items-end text-right' :
@@ -1117,46 +1597,134 @@ function LiveEditorContent() {
                           </div>
                         )}
 
+                        {section.type === 'split' && (
+                          <div className="py-20 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                              <div className="space-y-6">
+                                <h3
+                                  className="text-3xl md:text-4xl font-black text-white outline-none"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                                >
+                                  {section.content.title}
+                                </h3>
+                                <p
+                                  className="text-slate-200 outline-none"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => updateContent(section.id, { subtitle: e.currentTarget.innerText })}
+                                >
+                                  {section.content.subtitle}
+                                </p>
+                                <ul className="space-y-2 text-sm text-slate-200">
+                                  {(section.content.bullets || []).map((item: string, i: number) => (
+                                    <li key={i} className="flex items-center gap-2">
+                                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: globalColor }} />
+                                      <span>{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div className="relative">
+                                <div className="absolute inset-0 bg-white/10 blur-2xl rounded-[32px]" />
+                                <div className="relative rounded-[32px] overflow-hidden border border-white/10 shadow-2xl bg-white/10 backdrop-blur">
+                                  {section.content.imageUrl ? (
+                                    <img src={section.content.imageUrl} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="aspect-[4/3] bg-white/10" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'stats' && (
+                          <div className="py-16 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="max-w-5xl mx-auto">
+                              <h3
+                                className="text-2xl md:text-3xl font-black text-white text-center outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                              >
+                                {section.content.title}
+                              </h3>
+                              <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                {(section.content.items || []).map((item: any, i: number) => (
+                                  <div key={i} className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur p-6 text-center">
+                                    <AnimatedStat value={String(item.value)} />
+                                    <div className="text-xs uppercase tracking-widest text-slate-200 mt-2">{item.label}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {section.type === 'products' && (
                           <div className={`py-20 px-6 md:px-16 container mx-auto ${section.settings.textAlign === 'left' ? 'text-left' :
                             section.settings.textAlign === 'right' ? 'text-right' :
                               'text-center'}`}
                             style={{ backgroundColor: section.settings.bgColor || 'transparent' }}>
-                            <h3
-                              className="text-3xl mb-12 outline-none"
-                              contentEditable
-                              suppressContentEditableWarning
-                              onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
-                              style={{
-                                color: section.settings.titleColor || undefined,
-                                fontWeight: section.settings.isBold ? '900' : '800',
-                                fontStyle: section.settings.isItalic ? 'italic' : 'normal'
-                              }}
-                            >
-                              {section.content.title}
-                            </h3>
-                            <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${section.settings.textAlign === 'left' ? 'justify-items-start' :
-                              section.settings.textAlign === 'right' ? 'justify-items-end' :
-                                'justify-items-center'}`}>
-                              {allProducts.slice(0, 3).map((p, i) => (
-                                <div key={p.id} className="group/item">
-                                  <div onClick={(e) => { e.stopPropagation(); openMediaPicker(section.id, 'productImage', i); }} className="aspect-[3/4] bg-slate-50 rounded-[28px] mb-5 overflow-hidden border-2 border-transparent hover:border-orange-500/50 shadow-sm transition-all group-hover/item:shadow-md cursor-pointer relative">
-                                    {section.content.customImages?.[i] ? (
-                                      <img src={section.content.customImages[i]} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500" />
-                                    ) : (
-                                      <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-2">
-                                        <span className="text-3xl">🖼️</span>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Image Slot</span>
+                            {(() => {
+                              const source = section.content.source || "all";
+                              const collection = section.content.collection || "";
+                              const count = Number(section.content.count) || 3;
+                              const baseList = source === "collection" && collection
+                                ? liveProducts.filter((p) => p.category === collection)
+                                : liveProducts;
+                              const sectionProducts = baseList.slice(0, count);
+                              return (
+                                <>
+                                  <h3
+                                    className="text-3xl mb-12 outline-none"
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                                    style={{
+                                      color: section.settings.titleColor || undefined,
+                                      fontWeight: section.settings.isBold ? '900' : '800',
+                                      fontStyle: section.settings.isItalic ? 'italic' : 'normal'
+                                    }}
+                                  >
+                                    {section.content.title}
+                                  </h3>
+                                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${section.settings.textAlign === 'left' ? 'justify-items-start' :
+                                    section.settings.textAlign === 'right' ? 'justify-items-end' :
+                                      'justify-items-center'}`}>
+                                    {sectionProducts.length === 0 && (
+                                      <div className="col-span-full text-slate-400 text-sm font-semibold">
+                                        {productsLoaded ? "No products found for this selection." : "Loading products..."}
                                       </div>
                                     )}
+                                    {sectionProducts.map((p, i) => {
+                                      const customImage = section.content.customImages?.[i];
+                                      const imageUrl = customImage || p.imageUrl || "";
+                                      return (
+                                        <div key={p.id || i} className="group/item">
+                                          <div onClick={(e) => { e.stopPropagation(); openMediaPicker(section.id, 'productImage', i); }} className="aspect-[3/4] bg-slate-50 rounded-[28px] mb-5 overflow-hidden border-2 border-transparent hover:border-orange-500/50 shadow-sm transition-all group-hover/item:shadow-md cursor-pointer relative">
+                                            {imageUrl ? (
+                                              <img src={imageUrl} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500" />
+                                            ) : (
+                                              <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                                                <span className="text-3xl">🖼️</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Image Slot</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="px-1 text-center md:text-left">
+                                            <div className="font-extrabold text-lg text-slate-900 leading-tight">{p.name}</div>
+                                            <div className="text-orange-600 font-black text-sm mt-1">{p.price}</div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
-                                  <div className="px-1 text-center md:text-left">
-                                    <div className="font-extrabold text-lg text-slate-900 leading-tight">{p.name}</div>
-                                    <div className="text-orange-600 font-black text-sm mt-1">{p.price}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
 
@@ -1217,6 +1785,58 @@ function LiveEditorContent() {
                                   <p className="text-slate-500 text-sm leading-relaxed outline-none" contentEditable suppressContentEditableWarning onBlur={(e) => updateItemInList(section.id, 'items', i, 'a', e.currentTarget.innerText)} style={{ color: section.settings.subtitleColor || undefined }}>{item.a}</p>
                                 </div>
                               ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'testimonialsSlider' && (
+                          <div className="py-20 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="max-w-4xl mx-auto">
+                              <div className="text-center mb-10">
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Testimonials</div>
+                                <h3 className="mt-4 text-3xl font-black text-white">What founders say</h3>
+                              </div>
+                              <TestimonialSlider items={section.content.items || []} />
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'beforeAfter' && (
+                          <div className="py-20 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0f172a' }}>
+                            <div className="max-w-5xl mx-auto text-center">
+                              <h3
+                                className="text-3xl md:text-4xl font-black text-white outline-none"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => updateContent(section.id, { title: e.currentTarget.innerText })}
+                              >
+                                {section.content.title}
+                              </h3>
+                              <div className="mt-10">
+                                <BeforeAfterSlider
+                                  beforeUrl={section.content.beforeUrl}
+                                  afterUrl={section.content.afterUrl}
+                                  labelBefore={section.content.labelBefore}
+                                  labelAfter={section.content.labelAfter}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {section.type === 'trust' && (
+                          <div className="py-14 px-6 md:px-16" style={{ backgroundColor: section.settings.bgColor || '#0b1220' }}>
+                            <div className="max-w-5xl mx-auto">
+                              <div className="text-center text-white text-sm font-black uppercase tracking-widest mb-8">
+                                {section.content.title}
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {(section.content.items || []).map((item: string, i: number) => (
+                                  <div key={i} className="rounded-full border border-white/10 bg-white/10 backdrop-blur px-4 py-3 text-xs font-bold text-white text-center">
+                                    {item}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -1300,6 +1920,25 @@ function LiveEditorContent() {
         </main>
       </div>
 
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className={`rounded-2xl px-5 py-4 shadow-2xl border ${toast.kind === "error" ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+            <div className="text-xs font-black uppercase tracking-widest">
+              {toast.kind === "error" ? "Publish failed" : "Published"}
+            </div>
+            <div className="mt-2 text-sm font-semibold">{toast.message}</div>
+            {toast.href && toast.label && (
+              <Link
+                href={toast.href}
+                className="mt-3 inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-900"
+              >
+                {toast.label}
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* EXPORT / PUBLISH MODAL */}
       {showExport && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-10 backdrop-blur-md">
@@ -1323,14 +1962,77 @@ function LiveEditorContent() {
               <button onClick={() => setShowExport(false)} className="flex-1 py-4 text-sm font-bold text-slate-400 hover:text-slate-600 transition">Cancel</button>
               <button
                 onClick={() => {
-                  saveToLocalStorage();
-                  alert("Successfully Published! Your site is now live at your-store.shoply.com");
-                  setShowExport(false);
+                  publishToCloud()
+                    .then(() => {
+                      setShowExport(false);
+                    })
+                    .catch(() => {
+                    });
                 }}
                 className="flex-[2] py-4 bg-orange-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-orange-200 hover:scale-105 active:scale-95 transition-all"
               >
                 PUBLISH NOW
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showUpgrade && (
+        <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-8 backdrop-blur-md">
+          <div className="bg-white rounded-[36px] w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr]">
+              <div className="p-10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+                <div className="text-xs font-black uppercase tracking-[0.4em] text-amber-300">Premium Theme</div>
+                <h2 className="mt-4 text-3xl font-black leading-tight">Modern is a premium template.</h2>
+                <p className="mt-4 text-sm text-slate-200 leading-relaxed">
+                  Upgrade to Premium to unlock Modern theme, premium layout blocks, and priority support.
+                </p>
+                <ul className="mt-6 space-y-3 text-sm text-slate-100">
+                  <li>* Modern theme access + updates</li>
+                  <li>* Premium design blocks</li>
+                  <li>* Priority support</li>
+                </ul>
+              </div>
+              <div className="p-8 flex flex-col gap-6">
+                <div className="rounded-2xl border border-slate-200 p-6">
+                  <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Monthly Plan</div>
+                  <div className="mt-3 flex items-end gap-2">
+                    <div className="text-4xl font-black text-slate-900">199</div>
+                    <div className="text-sm text-slate-500 mb-1">TK / month</div>
+                  </div>
+                  <div className="mt-4 text-xs text-slate-500">Auto-renews monthly. Cancel any time.</div>
+                </div>
+                {billingError && (
+                  <div className="rounded-xl bg-rose-50 text-rose-700 text-xs font-bold uppercase tracking-widest px-4 py-2 border border-rose-200">
+                    {billingError}
+                  </div>
+                )}
+                <button
+                  onClick={startPremiumCheckout}
+                  disabled={processingPayment}
+                  className="w-full px-6 py-3 rounded-xl bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg hover:brightness-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {processingPayment ? "Redirecting..." : "Pay with AamarPay"}
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/dashboard/v1/theme"
+                    className="text-center px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold"
+                  >
+                    Theme Library
+                  </Link>
+                  <button
+                    onClick={() => setShowUpgrade(false)}
+                    className="text-center px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold"
+                  >
+                    Not now
+                  </button>
+                </div>
+                <div className="text-[10px] text-slate-400 leading-relaxed">
+                  Payments are processed securely via AamarPay sandbox.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1371,7 +2073,7 @@ function LiveEditorContent() {
               )) : (
                 <div className="col-span-4 py-10 text-center">
                   <p className="text-slate-400 mb-4">No images found.</p>
-                  <Link href="/ahmed-dashboard/media" className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Go to Library</Link>
+                  <Link href="/dashboard/v1/media" className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">Go to Library</Link>
                 </div>
               )}
             </div>
@@ -1382,11 +2084,101 @@ function LiveEditorContent() {
   );
 }
 
-export default function LiveEditor() {
+function AnimatedStat({ value }: { value: string }) {
+  const [display, setDisplay] = useState(0);
+  const raw = String(value || "");
+  const target = Number(raw.replace(/[^0-9.]/g, "")) || 0;
+  const suffix = raw.replace(/[0-9.]/g, "");
+
+  useEffect(() => {
+    let frame = 0;
+    const total = 30;
+    const timer = setInterval(() => {
+      frame += 1;
+      const next = Math.round((target * frame) / total);
+      setDisplay(next);
+      if (frame >= total) clearInterval(timer);
+    }, 30);
+    return () => clearInterval(timer);
+  }, [target]);
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LiveEditorContent />
-    </Suspense>
+    <div className="text-3xl font-black text-white">
+      {display}{suffix}
+    </div>
   );
 }
 
+function TestimonialSlider({ items }: { items: Array<{ name: string; role: string; text: string }> }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!items.length) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % items.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [items.length]);
+
+  if (!items.length) return null;
+  const active = items[index];
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/10 backdrop-blur p-8 text-white">
+      <p className="text-lg md:text-2xl font-semibold leading-relaxed">"{active.text}"</p>
+      <div className="mt-6 text-xs uppercase tracking-widest text-slate-200">
+        {active.name} - {active.role}
+      </div>
+      <div className="mt-6 flex items-center justify-center gap-2">
+        {items.map((_, i) => (
+          <span key={i} className={`h-1.5 w-6 rounded-full ${i === index ? "bg-white" : "bg-white/30"}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BeforeAfterSlider({
+  beforeUrl,
+  afterUrl,
+  labelBefore,
+  labelAfter
+}: {
+  beforeUrl: string;
+  afterUrl: string;
+  labelBefore: string;
+  labelAfter: string;
+}) {
+  const [value, setValue] = useState(50);
+  return (
+    <div className="relative rounded-[32px] overflow-hidden border border-white/10 bg-white/5">
+      <div className="aspect-[16/9] relative">
+        {beforeUrl && (
+          <img src={beforeUrl} className="absolute inset-0 w-full h-full object-cover" />
+        )}
+        <div className="absolute inset-0 overflow-hidden" style={{ width: `${value}%` }}>
+          {afterUrl && (
+            <img src={afterUrl} className="w-full h-full object-cover" />
+          )}
+        </div>
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full px-6">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={value}
+              onChange={(e) => setValue(Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        </div>
+        <div className="absolute top-4 left-4 text-[10px] uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-full">
+          {labelBefore || "Before"}
+        </div>
+        <div className="absolute top-4 right-4 text-[10px] uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-full">
+          {labelAfter || "After"}
+        </div>
+      </div>
+    </div>
+  );
+}

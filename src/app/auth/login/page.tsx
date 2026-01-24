@@ -40,8 +40,8 @@ function LoginPageContent() {
                 // ignore storage errors
             }
 
-            // FIXED: Always redirect to the Theme Library first after login
-            router.push('/dashboard/ahmed-dashboard/theme');
+            // Redirect to the Theme Library after login
+            router.push('/dashboard/v1/theme');
 
         } catch (err) {
             setError('An error occurred. Please try again.');
@@ -193,6 +193,7 @@ function LoginPageContent() {
     );
 }
 
+<<<<<<< HEAD
 export default function LoginPage() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
@@ -200,3 +201,5 @@ export default function LoginPage() {
         </Suspense>
     );
 }
+=======
+>>>>>>> 6914226b14ac2c34da8eec9d422fc2cb0ebce04b
