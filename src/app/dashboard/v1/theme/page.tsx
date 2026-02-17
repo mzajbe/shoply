@@ -123,22 +123,22 @@ export default function ThemeLibrary() {
 
         <div className="flex items-center gap-3">
           {/* UPDATED: Added Dashboard button to jump back to the main admin page */}
-          <Link
+          {/* <Link
             href="/dashboard"
             className="inline-flex items-center px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
             📊 View Dashboard
-          </Link>
+          </Link> */}
 
-          <LogoutButton className="inline-flex items-center px-6 py-3 border border-red-200 text-red-700 font-semibold rounded-xl hover:bg-red-50 transition-all active:scale-95 shadow-sm" />
+          {/* <LogoutButton className="inline-flex items-center px-6 py-3 border border-red-200 text-red-700 font-semibold rounded-xl hover:bg-red-50 transition-all active:scale-95 shadow-sm" /> */}
 
           {/* Quick Action: Start from Scratch */}
-          <Link
+          {/* <Link
             href="/dashboard/v1/theme/editor"
             className="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition-all hover:scale-105 active:scale-95"
           >
             Build from Scratch
-          </Link>
+          </Link> */}
         </div>
       </div>
 

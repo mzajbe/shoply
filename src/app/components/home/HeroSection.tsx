@@ -33,16 +33,16 @@ export default function HeroSection() {
             >
               Build my store
             </Link>
-            <Link
+            {/* <Link
               href="/store/demo"
               className="inline-flex justify-center items-center px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50 transition"
             >
               See a live demo
-            </Link>
+            </Link> */}
           </div>
 
           <div className="mt-8 grid grid-cols-3 gap-4 text-sm">
-            <Stat label="Themes" value="3+" />
+            <Stat label="Themes" value="2" />
             <Stat label="Setup" value="~5 min" />
             <Stat label="Mobile-ready" value="100%" />
           </div>

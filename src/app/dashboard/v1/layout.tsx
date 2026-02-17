@@ -62,7 +62,7 @@ function Sidebar() {
         { label: "Orders", icon: <IconShoppingCart />, href: "/dashboard/v1/orders" },
         { label: "Products", icon: <IconBox />, href: "/dashboard/v1/products" },
         { label: "Customers", icon: <IconUsers />, href: "/dashboard/v1/customers" },
-        { label: "Marketing", icon: <IconMegaphone />, href: "/dashboard/v1/marketing" },
+        // { label: "Marketing", icon: <IconMegaphone />, href: "/dashboard/v1/marketing" },
         { label: "Settings", icon: <IconCog />, href: "/dashboard/v1/settings" },
     ];
 
