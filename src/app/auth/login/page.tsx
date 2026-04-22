@@ -20,8 +20,10 @@ export default function LoginPage() {
 
         try {
             // Call your existing login API route
-            const response = await fetch('/api/auth/login', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${apiUrl}/api/auth/login`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });

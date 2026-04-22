@@ -7,7 +7,11 @@ export default function LogoutButton({ className }: { className?: string }) {
 
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+            await fetch(`${apiUrl}/api/auth/logout`, { 
+                method: 'POST',
+                credentials: 'include'
+            });
             router.push('/');
             router.refresh(); // Refresh to update auth state in UI
         } catch (error) {
