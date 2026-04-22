@@ -46,7 +46,8 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/dashboard/products");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${apiUrl}/api/dashboard/products`, { cache: "no-store", credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : []);
@@ -61,7 +62,8 @@ export default function ProductsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
-      await fetch(`/api/dashboard/products?id=${id}`, { method: "DELETE" });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      await fetch(`${apiUrl}/api/dashboard/products?id=${id}`, { method: "DELETE", credentials: "include" });
       fetchProducts();
     } catch (error) {
       alert("Failed to delete product");
@@ -83,18 +85,22 @@ export default function ProductsPage() {
         payload.append("image", imageFile);
       }
 
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
       if (editingProduct) {
         // Update
         payload.append("id", editingProduct.id);
-        await fetch("/api/dashboard/products", {
+        await fetch(`${apiUrl}/api/dashboard/products`, {
           method: "PUT",
           body: payload,
+          credentials: "include",
         });
       } else {
         // Create
-        await fetch("/api/dashboard/products", {
+        await fetch(`${apiUrl}/api/dashboard/products`, {
           method: "POST",
           body: payload,
+          credentials: "include",
         });
       }
       setShowModal(false);

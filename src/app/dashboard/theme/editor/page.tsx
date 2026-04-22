@@ -483,12 +483,7 @@ export default function LiveEditor() {
     // Save the current state so the preview page can read it
     localStorage.setItem("shoply_theme_preview", JSON.stringify(previewData));
 
-    if (!settingsLoaded || !storeSlug) {
-      window.open("/dashboard/settings", "_blank");
-      return;
-    }
-
-    window.open(storePath, "_blank");
+    window.open("/dashboard/theme/preview", "_blank");
   };
 
   const startPremiumCheckout = async () => {
@@ -840,8 +835,9 @@ export default function LiveEditor() {
                           <span className="text-xs font-bold capitalize">{s.type}</span>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={(e) => { e.stopPropagation(); moveSection(idx, 'up'); }} className="p-1 hover:bg-black/10 rounded">↑</button>
-                          <button onClick={(e) => { e.stopPropagation(); moveSection(idx, 'down'); }} className="p-1 hover:bg-black/10 rounded">↓</button>
+                          <button onClick={(e) => { e.stopPropagation(); moveSection(idx, 'up'); }} className="p-1 hover:bg-black/10 rounded" title="Move Up">↑</button>
+                          <button onClick={(e) => { e.stopPropagation(); moveSection(idx, 'down'); }} className="p-1 hover:bg-black/10 rounded" title="Move Down">↓</button>
+                          <button onClick={(e) => { e.stopPropagation(); removeSection(s.id); }} className="p-1 hover:bg-red-500/20 text-red-500 rounded font-bold" title="Delete">✕</button>
                         </div>
                       </div>
                     ))}
@@ -1443,7 +1439,7 @@ export default function LiveEditor() {
                       )}
 
                       {/* Quick Controls Bar (On Hover) */}
-                      <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-50">
                         <div className="bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl rounded-full p-1 flex gap-0.5">
                           <button onClick={(e) => { e.stopPropagation(); moveSection(index, 'up'); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-600">↑</button>
                           <button onClick={(e) => { e.stopPropagation(); moveSection(index, 'down'); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-600">↓</button>
