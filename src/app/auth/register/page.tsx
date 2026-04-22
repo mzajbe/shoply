@@ -39,7 +39,7 @@ export default function RegisterPage() {
         // ignore storage errors
       }
 
-      router.push("/dashboard/v1/theme");
+      router.push("/dashboard");
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
@@ -71,7 +71,7 @@ export default function RegisterPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+                                        className="w-full px-4 py-3 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-gray-400"
                   />
                 </div>
 
@@ -83,7 +83,7 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+                                        className="w-full px-4 py-3 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-gray-400"
                   />
                 </div>
 
@@ -95,7 +95,7 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-black"
+                                        className="w-full px-4 py-3 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition placeholder:text-gray-400"
                   />
                 </div>
 

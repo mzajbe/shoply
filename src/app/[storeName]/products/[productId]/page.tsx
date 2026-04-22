@@ -106,7 +106,7 @@ export default function ProductDetailsPage() {
 
   const primaryColor = theme?.globalColor || "#6366f1";
   const storeHomeHref = storeName ? `/${storeName}` : "/";
-  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/v1/theme/preview";
+  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/theme/preview";
   const pageLinks = Object.keys(theme?.pageSections || { Home: [] });
 
   const unitPrice = useMemo(() => {

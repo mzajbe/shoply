@@ -1,8 +1,30 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import Stat from "../ui/Stat";
 import MiniProduct from "../ui/MiniProduct";
 
 export default function HeroSection() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiUrl}/api/auth/me`, { cache: "no-store", credentials: "include" });
+        const data = await res.json();
+        setIsLoggedIn(!!data?.user);
+      } catch {
+        setIsLoggedIn(false);
+      } finally {
+        setLoaded(true);
+      }
+    };
+    loadUser();
+  }, []);
+
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0">
@@ -28,10 +50,10 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Link
-              href="/dashboard/v1/theme"
+              href={isLoggedIn ? "/dashboard" : "/auth/login"}
               className="inline-flex justify-center items-center px-6 py-3 rounded-xl bg-orange-600 text-white font-semibold hover:bg-orange-700 transition"
             >
-              Build my store
+              {loaded ? (isLoggedIn ? "Go to dashboard" : "Build my store") : "Loading..."}
             </Link>
             <Link
               href="/store/demo"

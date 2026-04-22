@@ -46,7 +46,7 @@ export default function ThemeCustomize() {
 		const params = new URLSearchParams({ id, color, font, layout });
 
 		// Route to the editor under the dashboard namespace.
-		router.push(`/dashboard/v1/theme/editor?${params.toString()}`);
+		router.push(`/dashboard/theme/editor?${params.toString()}`);
 	}
 
 	return (

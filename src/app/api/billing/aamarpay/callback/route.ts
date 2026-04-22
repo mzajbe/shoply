@@ -42,7 +42,7 @@ async function handleCallback(request: Request, form: FormData | null, query: UR
   }
 
   if (!merTxnId) {
-    return NextResponse.redirect(new URL("/dashboard/v1/theme?upgrade=failed", request.url));
+    return NextResponse.redirect(new URL("/dashboard?upgrade=failed", request.url));
   }
 
   const storeId = process.env.AAMARPAY_STORE_ID || "aamarpaytest";
@@ -90,7 +90,7 @@ async function handleCallback(request: Request, form: FormData | null, query: UR
         "UPDATE billing_transactions SET status=$1, pg_txnid=$2, updated_at=NOW() WHERE mer_txnid=$3",
         [status === "cancel" ? "canceled" : "failed", pgTxnId || null, merTxnId]
       );
-      return NextResponse.redirect(new URL("/dashboard/v1/theme?upgrade=failed", request.url));
+      return NextResponse.redirect(new URL("/dashboard?upgrade=failed", request.url));
     }
 
     let userId: number | null = null;
@@ -102,7 +102,7 @@ async function handleCallback(request: Request, form: FormData | null, query: UR
     }
 
     if (!userId) {
-      return NextResponse.redirect(new URL("/dashboard/v1/theme?upgrade=failed", request.url));
+      return NextResponse.redirect(new URL("/dashboard?upgrade=failed", request.url));
     }
 
     await client.query(
@@ -117,10 +117,10 @@ async function handleCallback(request: Request, form: FormData | null, query: UR
       [userId]
     );
 
-    return NextResponse.redirect(new URL("/dashboard/v1/theme", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   } catch (error) {
     console.error("AamarPay callback error:", error);
-    return NextResponse.redirect(new URL("/dashboard/v1/theme?upgrade=failed", request.url));
+    return NextResponse.redirect(new URL("/dashboard?upgrade=failed", request.url));
   } finally {
     client.release();
   }

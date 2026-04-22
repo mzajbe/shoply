@@ -246,8 +246,8 @@ export default function PreviewPage() {
   const pageLinks = Object.keys(config.pageSections || { Home: [] });
   const themeMood = config.themeMood || "bold";
   const isModern = config.themeId === "modern";
-  const basePath = storeName ? `/${storeName}` : "/dashboard/v1/theme/preview";
-  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/v1/theme/preview";
+  const basePath = storeName ? `/${storeName}` : "/dashboard/theme/preview";
+  const cartHref = storeName ? `/${storeName}/cart` : "/dashboard/theme/preview";
 
   const baseThemeClass = isModern
     ? themeMood === "soft"

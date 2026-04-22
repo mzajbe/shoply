@@ -12,8 +12,8 @@ export default function DashboardLayout({
     const pathname = usePathname();
 
     // Exclude full-page editor and preview routes from the dashboard layout
-    const isFullPage = pathname.startsWith("/dashboard/v1/theme/editor") ||
-        pathname.startsWith("/dashboard/v1/theme/preview");
+    const isFullPage = pathname.startsWith("/dashboard/theme/editor") ||
+        pathname.startsWith("/dashboard/theme/preview");
 
     if (isFullPage) {
         return <>{children}</>;
@@ -43,7 +43,8 @@ function Sidebar() {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const res = await fetch("/api/dashboard/settings", { cache: "no-store" });
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+                const res = await fetch(`${apiUrl}/api/dashboard/settings`, { cache: "no-store", credentials: "include" });
                 if (!res.ok) return;
                 const data = await res.json();
                 setStoreName(data?.store_name || "Shoply");
@@ -57,13 +58,13 @@ function Sidebar() {
     }, []);
 
     const navItems = [
-        { label: "Overview", icon: <IconGrid />, href: "/dashboard/v1" },
-        { label: "Themes", icon: <IconPalette />, href: "/dashboard/v1/theme" },
-        { label: "Orders", icon: <IconShoppingCart />, href: "/dashboard/v1/orders" },
-        { label: "Products", icon: <IconBox />, href: "/dashboard/v1/products" },
-        { label: "Customers", icon: <IconUsers />, href: "/dashboard/v1/customers" },
-        { label: "Marketing", icon: <IconMegaphone />, href: "/dashboard/v1/marketing" },
-        { label: "Settings", icon: <IconCog />, href: "/dashboard/v1/settings" },
+        { label: "Overview", icon: <IconGrid />, href: "/dashboard/overview" },
+        { label: "Themes", icon: <IconPalette />, href: "/dashboard" },
+        { label: "Orders", icon: <IconShoppingCart />, href: "/dashboard/orders" },
+        { label: "Products", icon: <IconBox />, href: "/dashboard/products" },
+        { label: "Customers", icon: <IconUsers />, href: "/dashboard/customers" },
+        { label: "Marketing", icon: <IconMegaphone />, href: "/dashboard/marketing" },
+        { label: "Settings", icon: <IconCog />, href: "/dashboard/settings" },
     ];
 
     return (
@@ -94,14 +95,7 @@ function Sidebar() {
                     })}
                 </nav>
 
-                <div className="mt-6">
-                    <Link
-                        href="/dashboard/v1/products"
-                        className="w-full text-sm px-3 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 inline-flex items-center justify-center"
-                    >
-                        Add product
-                    </Link>
-                </div>
+
             </div>
         </aside>
     );
@@ -118,10 +112,11 @@ function Header() {
     useEffect(() => {
         const loadHeader = async () => {
             try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
                 const [ordersRes, meRes, settingsRes] = await Promise.all([
-                    fetch("/api/dashboard/orders", { cache: "no-store" }),
-                    fetch("/api/auth/me", { cache: "no-store" }),
-                    fetch("/api/dashboard/settings", { cache: "no-store" }),
+                    fetch(`${apiUrl}/api/dashboard/orders`, { cache: "no-store", credentials: "include" }),
+                    fetch(`${apiUrl}/api/auth/me`, { cache: "no-store", credentials: "include" }),
+                    fetch(`${apiUrl}/api/dashboard/settings`, { cache: "no-store", credentials: "include" }),
                 ]);
                 if (ordersRes.ok) {
                     const data = await ordersRes.json();

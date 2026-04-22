@@ -1,6 +1,6 @@
 "use client";
 
-import PreviewPage from "@/app/dashboard/v1/theme/preview/page";
+import PreviewPage from "@/app/dashboard/theme/preview/page";
 
 export default function StorefrontPreviewPage() {
   return <PreviewPage />;

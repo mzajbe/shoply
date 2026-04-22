@@ -57,7 +57,7 @@ export default function PricingPage() {
             </p>
           </div>
           <Link
-            href="/dashboard/v1/theme"
+            href="/dashboard"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-slate-700 text-slate-200 hover:bg-slate-800 transition"
           >
             Back to Theme Library
@@ -77,7 +77,7 @@ export default function PricingPage() {
             </div>
             <div className="mt-8">
               <Link
-                href="/dashboard/v1/theme"
+                href="/dashboard"
                 className="inline-flex items-center justify-center w-full px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-semibold"
               >
                 Use Free Theme

@@ -14,7 +14,7 @@ export default function HowItWorksSection() {
             </p>
           </div>
           <Link
-            href="/dashboard/v1/theme"
+            href="/dashboard"
             className="px-5 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition"
           >
             Open Builder →

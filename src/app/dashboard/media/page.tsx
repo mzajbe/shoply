@@ -102,7 +102,7 @@ export default function MediaLibrary() {
         
         <div className="flex items-center gap-3">
           <Link 
-            href="/dashboard/v1/theme/editor" 
+            href="/dashboard/theme/editor" 
             className="px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all shadow-sm"
           >
             🎨 Back to Editor

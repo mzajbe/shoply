@@ -9,7 +9,8 @@ export default function SettingsPage() {
     currency: "USD",
     email: "",
     payment_stripe: false,
-    payment_paypal: false,
+    payment_sslcommerze: false,
+    payment_aamarpay: false,
     shipping_rate: "0.00",
     notifications_email: true
   });
@@ -19,7 +20,8 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await fetch("/api/dashboard/settings");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiUrl}/api/dashboard/settings`, { cache: "no-store", credentials: "include" });
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         setFormData({
@@ -27,7 +29,8 @@ export default function SettingsPage() {
           currency: data.currency || "USD",
           email: data.email || "",
           payment_stripe: !!data.payment_stripe,
-          payment_paypal: !!data.payment_paypal,
+          payment_sslcommerze: !!data.payment_sslcommerze,
+          payment_aamarpay: !!data.payment_aamarpay,
           shipping_rate: data.shipping_rate || "0.00",
           notifications_email: data.notifications_email !== undefined ? data.notifications_email : true
         });
@@ -44,12 +47,13 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch("/api/dashboard/settings", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      await fetch(`${apiUrl}/api/dashboard/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
-      alert("Settings saved successfully!");
     } catch (error) {
       alert("Failed to save settings");
     } finally {
@@ -79,9 +83,8 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Support Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Shop email <span className="text-slate-400 font-normal">(optional)</span></label>
                 <input
-                  required
                   type="email"
                   className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-orange-500 outline-none"
                   value={formData.email}
@@ -129,9 +132,16 @@ export default function SettingsPage() {
                 </label>
               </div>
               <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
-                <span className="font-medium">Accept PayPal Payments</span>
+                <span className="font-medium">Accept SSLCommerze Payments</span>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={formData.payment_paypal} onChange={(e) => setFormData({ ...formData, payment_paypal: e.target.checked })} />
+                  <input type="checkbox" className="sr-only peer" checked={formData.payment_sslcommerze} onChange={(e) => setFormData({ ...formData, payment_sslcommerze: e.target.checked })} />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                </label>
+              </div>
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                <span className="font-medium">Accept Aamar Pay Payments</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={formData.payment_aamarpay} onChange={(e) => setFormData({ ...formData, payment_aamarpay: e.target.checked })} />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
                 </label>
               </div>
